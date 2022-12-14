@@ -47,4 +47,6 @@
     kubectl apply -k flux/infra/flux/crds
     kubectl apply -k flux/infra/flux/system
 
+## cluster
+
     kubectl apply -k flux/clusters/kyuubee
