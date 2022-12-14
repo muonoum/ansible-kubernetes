@@ -6,7 +6,7 @@
 ## dependencies
 
     brew install 1password/tap/1password-cli fluxcd/tap/flux ansible \
-        helm istioctl kubernetes-cli kustomize
+        helm istioctl kubernetes-cli kustomize vault
 
 ## deploy
 
