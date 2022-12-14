@@ -9,6 +9,12 @@ spec:
   eventSources:
     - kind: GitRepository
       name: '*'
+    - kind: HelmChart
+      name: '*'
+    - kind: HelmRelease
+      name: '*'
+    - kind: HelmRepository
+      name: '*'
     - kind: Kustomization
       name: '*'
   exclusionList:
