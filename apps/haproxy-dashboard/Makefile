@@ -30,11 +30,13 @@ clean:
 dist-clean: clean
 	-rm -rf parts/dashboard/.gren
 
-run-reader: Makefile build/reader
-	build/reader --ca-cert=../../setup/root.crt start --log-format=console --address 127.0.0.1:9999 --source-url "https://$(LB)/?stats;csv"
+.PHONY: run-reader
+run-reader:
+	cd parts/server && go run -v --race ./cmd/reader --ca-cert=../../../../setup/root.crt start --log-format=console --address 127.0.0.1:3210 --source-url "https://$(LB)/?stats;csv"
 
-run-dashboard: Makefile build/dashboard
-	build/dashboard --log-format=console --address=:8888 --source="http://localhost:9999/"
+.PHONY: run-dashboard
+run-dashboard:
+	cd parts/server && go run -v --race ./cmd/dashboard --log-format=console --address=:3310 --source="http://localhost:3210/"
 
 .PHONY: reader-image
 reader-image:
