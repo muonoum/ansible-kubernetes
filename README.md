@@ -1,5 +1,8 @@
 # kube
 
+    export cluster=kyuubee
+    export vault="-address https://vault:8200 -ca-cert setup/root.crt"
+
 ## deploy
 
     make -C vendor
@@ -15,9 +18,6 @@
     kubectl apply -k flux/infra/kube-system/metrics-server
 
 ## external-secrets
-
-    export cluster=kyuubee
-    export vault="-address https://vault:8200 -ca-cert setup/root.crt"
 
     for n in {1..3}; do
         vault operator unseal $vault $(op read op://$cluster/vault/unseal${n})
