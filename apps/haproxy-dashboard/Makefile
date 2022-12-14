@@ -1,6 +1,5 @@
 dashboard := parts/dashboard/gren.json $(shell find parts/dashboard/src)
 server := parts/server/go.mod parts/server/go.sum $(shell find parts/server -name *.go)
-reader := parts/server/go.mod parts/server/go.sum $(shell find parts/server -name *.go)
 embed := parts/server/cmd/dashboard/embed
 bundler := parts/bundler/go.mod parts/bundler/go.sum $(shell find parts/bundler -name *.go)
 
@@ -15,7 +14,7 @@ build/bundler: Makefile $(bundler) | build
 build/dashboard: Makefile $(embed) $(server) | build
 	cd parts/server && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w' -v -o ../../$@ ./cmd/dashboard
 
-build/reader: Makefile $(reader) | build
+build/reader: Makefile $(server) | build
 	cd parts/server && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w' -v -o ../../$@ ./cmd/reader
 
 $(embed): Makefile build/bundler $(dashboard) | build
