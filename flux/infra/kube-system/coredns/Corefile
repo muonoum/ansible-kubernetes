@@ -1,0 +1,29 @@
+.:53 {
+    errors
+    health {
+        lameduck 5s
+    }
+    ready
+    hosts {
+        ttl 30
+        10.0.1.10 lb etcd apiserver konnectivity minio vault
+        10.0.1.11 node-dcb3aa11
+        10.0.1.12 node-0d53114c
+        10.0.1.13 node-0761a99d
+        10.0.1.14 node-df17699e
+        10.0.1.115 node-27263f6d
+        10.0.1.116 node-3d1ac54a
+        fallthrough
+    }
+    kubernetes cluster.local in-addr.arpa ip6.arpa {
+        pods insecure
+        fallthrough in-addr.arpa ip6.arpa
+        ttl 30
+    }
+    forward . /etc/resolv.conf
+    prometheus :9153
+    cache 30
+    loop
+    reload
+    loadbalance
+}

@@ -1,0 +1,13 @@
+apiVersion: apiserver.k8s.io/v1beta1
+kind: EgressSelectorConfiguration
+egressSelections:
+  - name: cluster
+    connection:
+      proxyProtocol: HTTPConnect
+      transport:
+        tcp:
+          url: https://konnectivity:8131
+          tlsConfig:
+            caBundle: /etc/control-plane/root.crt
+            clientCert: /etc/kube-apiserver/konnectivity-client.chain
+            clientKey: /etc/kube-apiserver/konnectivity-client.key

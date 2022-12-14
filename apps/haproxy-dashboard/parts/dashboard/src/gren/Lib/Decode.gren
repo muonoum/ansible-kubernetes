@@ -1,0 +1,44 @@
+module Lib.Decode exposing ( andMap, default, optional, required )
+
+import Json.Decode as Decode exposing ( Decoder )
+
+
+andMap : Decoder a -> Decoder (a -> b) -> Decoder b
+andMap =
+    Decode.map2 (|>)
+
+
+required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
+required key value =
+    Decode.field key value
+        |> andMap
+
+
+optional : String -> Decoder a -> Decoder (Maybe a -> b) -> Decoder b
+optional key value =
+    Decode.maybe (Decode.field key Decode.value)
+        |> Decode.andThen
+                (\maybe ->
+                    case maybe of
+                        Nothing ->
+                            Decode.succeed Nothing
+
+                        Just _ ->
+                            Decode.map Just (Decode.field key value)
+                )
+        |> andMap
+
+
+default : String -> Decoder a -> a -> Decoder (a -> b) -> Decoder b
+default key value def =
+    Decode.maybe (Decode.field key Decode.value)
+        |> Decode.andThen
+                (\maybe ->
+                    case maybe of
+                        Just _ ->
+                            Decode.field key value
+
+                        Nothing ->
+                            Decode.succeed def
+                )
+        |> andMap

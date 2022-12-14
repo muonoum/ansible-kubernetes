@@ -1,0 +1,39 @@
+- name: private key
+  register: key_data
+  community.crypto.openssl_privatekey:
+    return_content: yes
+    path: "{{ path }}.key"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: "{{ key_mode | default('0600') | int }}"
+
+- name: request
+  register: request_data
+  community.crypto.openssl_csr:
+    return_content: yes
+    path: "{{ path }}.req"
+    privatekey_content: "{{ key_data.privatekey }}"
+    common_name: "{{ common_name }}"
+    use_common_name_for_san: false
+    basic_constraints: ["CA:TRUE", "pathlen:0"]
+    basic_constraints_critical: true
+    key_usage: [keyCertSign]
+    key_usage_critical: true
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: "{{ request_mode | default('0640') | int }}"
+
+- name: certificate
+  register: certificate_data
+  community.crypto.x509_certificate:
+    path: "{{ path }}.crt"
+    csr_content: "{{ request_data.csr }}"
+    privatekey_content: "{{ key_data.privatekey }}"
+    provider: ownca
+    ownca_content: "{{ lookup('ansible.builtin.file', 'setup/root.crt') }}"
+    ownca_privatekey_content: "{{ lookup('ansible.builtin.file', 'setup/root.key') }}"
+    ownca_not_after: +365d
+    ownca_not_before: "-1d"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: "{{ certificate_mode | default('0640') | int }}"

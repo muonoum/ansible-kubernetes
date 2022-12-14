@@ -1,0 +1,12 @@
+[Unit]
+After=network-online.target
+Wants=network-online.target
+ConditionFileNotEmpty=/etc/keepalived/keepalived.conf
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/keepalived --dont-fork
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

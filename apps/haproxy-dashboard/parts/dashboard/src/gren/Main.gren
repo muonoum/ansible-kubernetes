@@ -1,0 +1,231 @@
+module Main exposing (..)
+
+import Browser
+import Browser.Events as Browser
+import Browser.Navigation as Browser
+import Config exposing ( Config )
+import Dict exposing ( Dict )
+import Html exposing ( Html, node, text, section, table, thead, tr, th, td )
+import Html.Attributes exposing ( colspan, class, classList )
+import Http
+import Json.Decode as Decode exposing ( Decoder )
+import Lib.Return as Return exposing ( Return )
+import Stats
+import Task
+import Time
+import Url exposing ( Url )
+
+
+type Msg
+    = Tick Time.Posix
+    | UrlRequested Browser.UrlRequest
+    | UrlChanged Url
+    | VisibilityChanged Browser.Visibility
+    | GotStats (Result Http.Error (Array Stats.Row))
+    | Group (Array Stats.Row)
+
+
+type alias Model =
+    { key : Browser.Key
+    , visibility : Browser.Visibility
+    , config : Config
+    , stats : Result Http.Error (Array Stats.Row)
+    , groups : Array Stats.Group
+    }
+
+
+main : Program {} Model Msg
+main =
+    Browser.application
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onUrlRequest = UrlRequested
+        , onUrlChange = UrlChanged
+        }
+
+
+initialModel : Browser.Key -> Url -> Model
+initialModel key url =
+    { key = key
+    , visibility = Browser.Visible
+    , config = Config.parse url Config.default
+    , stats = Ok []
+    , groups = []
+    }
+
+
+init : {} -> Url -> Browser.Key -> Return Msg Model
+init _ url key =
+    { model = initialModel key url
+    , command = request
+    }
+
+request =
+    Http.get
+        { url = "/stats/"
+        , expect = Http.expectJson GotStats statsDecoder
+        }
+
+
+statsDecoder : Decoder (Array Stats.Row)
+statsDecoder =
+    Decode.array Stats.decoder
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Browser.onVisibilityChange VisibilityChanged
+        , Time.every 1000 Tick
+        ]
+
+
+update : Msg -> Model -> Return Msg Model
+update msg model =
+    case msg of
+        Tick _ ->
+            { model = model
+            , command = request
+            }
+
+        UrlRequested (Browser.Internal url) ->
+            { model = model
+            , command = Browser.pushUrl model.key (Url.toString url)
+            }
+
+        UrlRequested (Browser.External href) ->
+            { model = model
+            , command = Browser.load href
+            }
+
+        UrlChanged url ->
+            let
+                config =
+                    Config.parse url model.config
+            in
+            { model = { model | config = config }
+            , command = Cmd.none
+            }
+
+        VisibilityChanged visibility ->
+            { model = { model | visibility = visibility }
+            , command = Cmd.none
+            }
+
+        GotStats (Ok rows) ->
+            { model = { model | stats = Ok rows }
+            , command =
+                Task.succeed (Group rows)
+                    |> Task.perform identity
+            }
+
+        GotStats (Err error) ->
+            { model = { model | stats = Err error }
+            , command = Cmd.none
+            }
+
+        Group rows ->
+            { model = { model | groups = Stats.group rows }
+            , command = Cmd.none
+            }
+
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "haproxy-dashboard"
+    , body =
+        case model.stats of
+            Err error ->
+                Array.flatten
+                    [ [ section [ class "error" ] [ text (Debug.toString error) ] ]
+                    , [ node "haproxy-stats" []
+                            [ Array.flatMap viewGroup model.groups
+                                |> Array.pushFirst viewHeader
+                                |> table []
+                            ]
+                      ]
+                    ]
+
+            Ok _ ->
+                [ node "haproxy-stats" []
+                    [ Array.flatMap viewGroup model.groups
+                        |> Array.pushFirst viewHeader
+                        |> table []
+                    ]
+                ]
+    }
+
+
+viewHeader : Html msg
+viewHeader =
+    thead []
+        [ tr [ class "header1" ]
+            [ th [] []
+            , th [ colspan 2 ] [ text "Queue" ]
+            , th [ colspan 2 ] [ text "Session" ]
+            , th [] []
+            , th [ colspan 5 ] [ text "HTTP" ]
+            ]
+        , tr [ class "header2" ]
+            [ th [] [ text "Name" ]
+            , th [] [ text "Cur" ]
+            , th [] [ text "Max" ]
+            , th [] [ text "Cur" ]
+            , th [] [ text "Max" ]
+            , th [] [ text "Status" ]
+            , th [] [ text "1xx" ]
+            , th [] [ text "2xx" ]
+            , th [] [ text "3xx" ]
+            , th [] [ text "4xx" ]
+            , th [] [ text "txx" ]
+            ]
+        ]
+
+
+viewGroup : Stats.Group -> Array (Html msg)
+viewGroup group =
+    Array.map (viewRow Stats.Server) group.rows
+        |> Array.pushFirst (viewRow group.kind group.row)
+
+
+viewRow : Stats.Kind -> Stats.Row -> Html msg
+viewRow kind row =
+    let
+        maybe f v d =
+            Maybe.map (f >> text) v
+                |> Maybe.withDefault (text d)
+
+        maybeNumber =
+            maybe String.fromInt
+
+        maybeText v d =
+            maybe identity
+    in
+    if kind == Stats.Frontend then
+        text ""
+    else
+        tr [ classList
+                [ { class = "group", enabled = True }
+                , { class = "server", enabled = kind == Stats.Server }
+                , { class = "frontend", enabled = kind == Stats.Frontend }
+                , { class = "backend", enabled = kind == Stats.Backend }
+                , { class = "up", enabled = row.status == "UP" || row.status == "OPEN" }
+                , { class = "down", enabled = row.status == "DOWN" || row.status == "NOLB" }
+                , { class = "maint", enabled = String.startsWith "MAINT" row.status }
+                ]
+            ]
+            [ td [] [ if kind == Stats.Server then text row.svname else text row.pxname ]
+            , td [] [ maybeNumber row.qcur "-" ]
+            , td [] [ maybeNumber row.qmax "-" ]
+            , td [] [ text (String.fromInt row.scur) ]
+            , td [] [ text (String.fromInt row.smax) ]
+            , td [] [ text row.status ]
+            , td [] [ maybeNumber row.hrsp1xx "-" ]
+            , td [] [ maybeNumber row.hrsp2xx "-" ]
+            , td [] [ maybeNumber row.hrsp3xx "-" ]
+            , td [] [ maybeNumber row.hrsp4xx "-" ]
+            , td [] [ maybeNumber row.hrsp5xx "-" ]
+            ]
+

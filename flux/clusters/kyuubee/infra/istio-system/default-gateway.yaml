@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: default-gateway
+
+spec:
+  gatewayClassName: istio
+
+  listeners:
+    - name: default
+      hostname: "*.yuki.no"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All

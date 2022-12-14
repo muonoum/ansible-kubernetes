@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: haproxy-dashboard
+
+spec:
+  ports:
+    - name: http-dashboard
+      port: 3310
+  selector:
+    app.kubernetes.io/name: haproxy-dashboard

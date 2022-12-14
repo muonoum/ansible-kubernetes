@@ -1,0 +1,69 @@
+- name: key
+  register: key_data
+  community.crypto.openssl_privatekey:
+    return_content: yes
+    path: "{{ path }}.key"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: "{{ key_mode | default('0600') | int }}"
+
+- name: request
+  register: request_data
+  community.crypto.openssl_csr:
+    return_content: yes
+    path: "{{ path }}.req"
+    privatekey_content: "{{ key_data.privatekey }}"
+    common_name: "{{ common_name }}"
+    organization_name: "{{ organization_name | default(omit) }}"
+    use_common_name_for_san: false
+    extended_key_usage: [clientAuth]
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: 0640
+
+- name: certificate
+  register: certificate_data
+  community.crypto.x509_certificate:
+    return_content: yes
+    path: "{{ path }}.crt"
+    privatekey_content: "{{ key_data.privatekey }}"
+    csr_content: "{{ request_data.csr }}"
+    provider: ownca
+    ownca_path: "{{ issuer }}.crt"
+    ownca_privatekey_path: "{{ issuer }}.key"
+    ownca_not_after: +365d
+    ownca_not_before: "-1d"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: 0640
+
+- name: read issuer
+  when: chain_path is defined or bundle_path is defined
+  register: issuer_data
+  ansible.builtin.slurp:
+    src: "{{ issuer }}.crt"
+
+- name: chain
+  when: chain_path is defined
+  notify: "{{ notify | default(omit) }}"
+  ansible.builtin.copy:
+    dest: "{{ chain_path }}"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: 0640
+    content: |
+      {{ certificate_data.certificate | trim }}
+      {{ issuer_data.content | b64decode | trim }}
+
+- name: bundle
+  when: bundle_path is defined
+  notify: "{{ notify | default(omit) }}"
+  ansible.builtin.copy:
+    dest: "{{ bundle_path }}"
+    owner: "{{ owner | default(omit) }}"
+    group: "{{ group | default(owner | default(omit)) }}"
+    mode: 0600
+    content: |
+      {{ certificate_data.certificate | trim }}
+      {{ key_data.privatekey | trim }}
+      {{ issuer_data.content | b64decode | trim }}

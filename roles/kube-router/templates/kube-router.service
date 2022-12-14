@@ -1,0 +1,11 @@
+[Unit]
+After=network.target
+
+[Service]
+Environment=KUBE_ROUTER_CNI_CONF_FILE=/etc/cni/net.d/kube.conflist
+ExecStart=/usr/bin/kube-router {{ kube_router_flags | cmdline }}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

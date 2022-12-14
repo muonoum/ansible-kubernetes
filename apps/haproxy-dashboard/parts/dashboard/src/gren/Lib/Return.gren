@@ -1,0 +1,15 @@
+module Lib.Return exposing ( Return, model )
+
+
+
+type alias Return msg model =
+    { model : model
+    , command : Cmd msg
+    }
+
+
+model : model -> Return msg model
+model m =
+    { model = m
+    , command = Cmd.none
+    }

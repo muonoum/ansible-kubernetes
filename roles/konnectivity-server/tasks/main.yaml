@@ -1,0 +1,87 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: konnectivity-server.mk
+    dest: /root/Makefile.d/konnectivity-server.mk
+
+- name: user
+  notify: restart konnectivity-server
+  ansible.builtin.user:
+    name: konnectivity-server
+    shell: /usr/sbin/nologin
+    home: /var/lib/konnectivity-server
+    groups: [control-plane]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/konnectivity-server
+    state: directory
+    owner: konnectivity-server
+    group: konnectivity-server
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/konnectivity-server
+    state: directory
+    owner: konnectivity-server
+    group: konnectivity-server
+    mode: 0750
+
+- name: konnectivity-server server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart konnectivity-server
+    path: /etc/konnectivity-server/server
+    chain_path: /etc/konnectivity-server/server.chain
+    issuer: /etc/control-plane/issuer
+    common_name: konnectivity-server
+    subject_alt_names: "{{ konnectivity_server_subject_alt_names }}"
+    owner: konnectivity-server
+
+- name: konnectivity-server client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart konnectivity-server
+    path: /etc/konnectivity-server/client
+    chain_path: /etc/konnectivity-server/client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: system:konnectivity-server
+    organization_name: system:konnectivity-server
+    owner: konnectivity-server
+
+- name: konnectivity-server kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart konnectivity-server
+    path: /etc/konnectivity-server/client.kubeconfig
+    certificate: /etc/konnectivity-server/client.chain
+    key: /etc/konnectivity-server/client.key
+    root: /etc/control-plane/root.crt
+    url: "{{ apiserver_url }}"
+    user: system:konnectivity-server
+    owner: konnectivity-server
+
+- name: binary
+  notify: restart konnectivity-server
+  ansible.builtin.copy:
+    src: "konnectivity-server-{{ konnectivity_version }}-{{ node_arch }}"
+    dest: /usr/bin/konnectivity-server
+    mode: 0755
+
+- name: service
+  notify: restart konnectivity-server
+  ansible.builtin.template:
+    src: konnectivity-server.service
+    dest: /etc/systemd/system/konnectivity-server.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: konnectivity-server.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

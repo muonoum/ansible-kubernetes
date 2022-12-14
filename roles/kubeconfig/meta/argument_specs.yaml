@@ -1,0 +1,24 @@
+argument_specs:
+  main:
+    options:
+      path:
+        required: yes
+        type: str
+      cluster_name:
+        required: yes
+        type: str
+      user:
+        required: yes
+        type: str
+      url:
+        required: yes
+        type: str
+      certificate:
+        required: yes
+        type: str
+      key:
+        required: yes
+        type: str
+      notify:
+        required: no
+        type: str

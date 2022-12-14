@@ -1,0 +1,14 @@
+[Unit]
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/minio server {{ minio_flags | cmdline }} {{ minio_storage_path }}
+Environment=MINIO_ROOT_USER=admin
+Environment=MINIO_ROOT_PASSWORD=admin123
+User=minio
+Group=minio
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Wants=network.target
+Wants=konnectivity-server.service kube-controller-manager.service kube-scheduler.service
+After=network.target konnectivity-server.service
+
+[Service]
+ExecStart=/usr/bin/kube-apiserver {{ apiserver_flags | cmdline }}
+User=kube-apiserver
+Group=kube-apiserver
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

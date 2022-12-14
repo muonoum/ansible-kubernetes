@@ -1,0 +1,87 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: scheduler.mk
+    dest: /root/Makefile.d/scheduler.mk
+
+- name: user
+  notify: restart scheduler
+  ansible.builtin.user:
+    name: kube-scheduler
+    shell: /usr/sbin/nologin
+    home: /var/lib/kube-scheduler
+    groups: [control-plane]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kube-scheduler
+    state: directory
+    owner: kube-scheduler
+    group: kube-scheduler
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kube-scheduler
+    state: directory
+    owner: kube-scheduler
+    group: kube-scheduler
+    mode: 0750
+
+- name: scheduler server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart scheduler
+    path: /etc/kube-scheduler/server
+    chain_path: /etc/kube-scheduler/server.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-scheduler
+    subject_alt_names: "{{ scheduler_subject_alt_names }}"
+    owner: kube-scheduler
+
+- name: scheduler client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart scheduler
+    path: /etc/kube-scheduler/client
+    chain_path: /etc/kube-scheduler/client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: system:kube-scheduler
+    organization_name: system:kube-scheduler
+    owner: kube-scheduler
+
+- name: scheduler kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart scheduler
+    path: /etc/kube-scheduler/client.kubeconfig
+    certificate: /etc/kube-scheduler/client.chain
+    key: /etc/kube-scheduler/client.key
+    root: /etc/control-plane/root.crt
+    url: "{{ apiserver_url }}"
+    user: system:kube-scheduler
+    owner: kube-scheduler
+
+- name: binary
+  notify: restart scheduler
+  ansible.builtin.copy:
+    src: "kube-scheduler-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kube-scheduler
+    mode: 0755
+
+- name: service
+  notify: restart scheduler
+  ansible.builtin.template:
+    src: kube-scheduler.service
+    dest: /etc/systemd/system/kube-scheduler.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kube-scheduler.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - Namespace--flux-system.yaml
+  - ServiceAccount--kustomize-controller.yaml
+  - ServiceAccount--notification-controller.yaml
+  - ServiceAccount--source-controller.yaml
+  - ClusterRole--crd-controller-flux-system.yaml
+  - ClusterRoleBinding--cluster-reconciler-flux-system.yaml
+  - ClusterRoleBinding--crd-controller-flux-system.yaml
+  - Service--notification-controller.yaml
+  - Service--source-controller.yaml
+  - Service--webhook-receiver.yaml
+  - Deployment--kustomize-controller.yaml
+  - Deployment--notification-controller.yaml
+  - Deployment--source-controller.yaml
+  - NetworkPolicy--allow-egress.yaml
+  - NetworkPolicy--allow-scraping.yaml
+  - NetworkPolicy--allow-webhooks.yaml

@@ -1,0 +1,84 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: containerd.mk
+    dest: /root/Makefile.d/containerd.mk
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+
+- name: containerd config
+  notify: restart containerd
+  ansible.builtin.template:
+    src: config.toml
+    dest: /etc/containerd/config.toml
+
+- name: crictl config
+  ansible.builtin.template:
+    src: crictl.yaml
+    dest: /etc/crictl.yaml
+
+- name: configure modprobe
+  ansible.builtin.copy:
+    content: |
+      overlay
+      br_netfilter
+    dest: /etc/modules-load.d/kube.conf
+
+- name: load modules
+  loop: [overlay, br_netfilter]
+  changed_when: no
+  ansible.builtin.command:
+    cmd: "modprobe {{ item }}"
+
+- name: configure sysctl
+  notify: restart containerd
+  loop:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.ipv4.ip_forward
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: 1
+    sysctl_file: /etc/sysctl.d/kube.conf
+    reload: yes
+
+- name: containerd binaries
+  notify: restart containerd
+  loop:
+    - containerd
+    - containerd-shim
+    - containerd-shim-runc-v1
+    - containerd-shim-runc-v2
+  ansible.builtin.copy:
+    src: "containerd-{{ containerd_version }}-{{ node_arch }}/{{ item }}"
+    dest: /usr/bin/
+    mode: 0755
+
+- name: runc binary
+  notify: restart containerd
+  ansible.builtin.copy:
+    src: "runc-{{ runc_version }}-{{ node_arch }}"
+    dest: /usr/bin/runc
+    mode: 0755
+
+- name: crictl binary
+  ansible.builtin.copy:
+    src: "crictl-{{ crictl_version }}-{{ node_arch }}"
+    dest: /usr/bin/crictl
+    mode: 0755
+
+- name: service
+  notify: restart containerd
+  ansible.builtin.template:
+    src: containerd.service
+    dest: /etc/systemd/system/containerd.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: containerd.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

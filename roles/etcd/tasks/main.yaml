@@ -1,0 +1,93 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: etcd.mk
+    dest: /root/Makefile.d/etcd.mk
+
+- name: user
+  notify: restart etcd
+  ansible.builtin.user:
+    name: etcd
+    shell: /usr/sbin/nologin
+    home: /var/lib/etcd
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/etcd
+    mode: 0700
+    state: directory
+    owner: etcd
+    group: etcd
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/etcd
+    state: directory
+    owner: etcd
+    group: etcd
+    mode: 0750
+
+- name: root certificate
+  ansible.builtin.copy:
+    src: setup/root.crt
+    dest: /etc/etcd/root.crt
+    owner: etcd
+    group: etcd
+    mode: 0640
+
+- name: etcd issuer
+  ansible.builtin.include_role:
+    name: certificate/issuer
+  vars:
+    common_name: etcd-issuer
+    path: /etc/etcd/issuer
+    owner: etcd
+
+- name: etcd server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart etcd
+    path: /etc/etcd/server
+    chain_path: /etc/etcd/server.chain
+    issuer: /etc/etcd/issuer
+    common_name: etcd
+    subject_alt_names: "{{ etcd_server_subject_alt_names }}"
+    owner: etcd
+
+- name: etcd peer certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart etcd
+    path: /etc/etcd/peer
+    chain_path: /etc/etcd/peer.chain
+    issuer: /etc/etcd/issuer
+    common_name: etcd-peer
+    subject_alt_names: "{{ etcd_peer_subject_alt_names }}"
+    owner: etcd
+
+- name: etcd binary
+  notify: restart etcd
+  ansible.builtin.copy:
+    src: "etcd-{{ etcd_version }}-{{ node_arch }}"
+    dest: /usr/bin/etcd
+    mode: 0755
+
+- name: etcdctl binary
+  ansible.builtin.copy:
+    src: "etcdctl-{{ etcd_version }}-{{ node_arch }}"
+    dest: /usr/bin/etcdctl
+    mode: 0755
+
+- name: etcdutl binary
+  ansible.builtin.copy:
+    src: "etcdutl-{{ etcd_version }}-{{ node_arch }}"
+    dest: /usr/bin/etcdutl
+    mode: 0755
+
+- name: service
+  notify: restart etcd
+  ansible.builtin.template:
+    src: etcd.service
+    dest: /etc/systemd/system/etcd.service

@@ -1,0 +1,105 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: kubelet.mk
+    dest: /root/Makefile.d/kubelet.mk
+
+- name: user
+  notify: restart kubelet
+  ansible.builtin.user:
+    name: kubelet
+    shell: /usr/sbin/nologin
+    home: /var/lib/kubelet
+    groups: [worker]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kubelet
+    state: directory
+    owner: kubelet
+    group: kubelet
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kubelet
+    state: directory
+    owner: kubelet
+    group: kubelet
+    mode: 0750
+
+- name: kubelet server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart kubelet
+    path: /etc/kubelet/server
+    chain_path: /etc/kubelet/server.chain
+    issuer: /etc/worker/issuer
+    common_name: "{{ node_name }}"
+    subject_alt_names: "{{ kubelet_subject_alt_names }}"
+    owner: kubelet
+
+- name: kubelet client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart kubelet
+    path: /etc/kubelet/client
+    chain_path: /etc/kubelet/client.chain
+    issuer: /etc/worker/issuer
+    common_name: "system:node:{{ node_name }}"
+    organization_name: system:nodes
+    owner: kubelet
+
+- name: kubelet kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart kubelet
+    path: /etc/kubelet/client.kubeconfig
+    certificate: /etc/kubelet/client.chain
+    key: /etc/kubelet/client.key
+    root: /etc/worker/root.crt
+    url: "{{ apiserver_url }}"
+    user: "system:node:{{ node_name }}"
+    owner: kubelet
+
+- name: resolv.conf
+  notify: restart kubelet
+  ansible.builtin.template:
+    src: resolv.conf
+    dest: /etc/kubelet/resolv.conf
+    owner: kubelet
+    group: kubelet
+    mode: 0640
+
+- name: kubelet config
+  notify: restart kubelet
+  ansible.builtin.template:
+    src: kubelet.yaml
+    dest: /etc/kubelet/kubelet.yaml
+    owner: kubelet
+    group: kubelet
+    mode: 0640
+
+- name: binary
+  notify: restart kubelet
+  ansible.builtin.copy:
+    src: "kubelet-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kubelet
+    mode: 0755
+
+- name: service
+  notify: restart kubelet
+  ansible.builtin.template:
+    src: kubelet.service
+    dest: /etc/systemd/system/kubelet.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kubelet.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

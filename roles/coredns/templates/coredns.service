@@ -1,0 +1,14 @@
+[Unit]
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/coredns {{ coredns_flags | cmdline }}
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+User=coredns
+Group=coredns
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

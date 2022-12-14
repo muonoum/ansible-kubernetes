@@ -1,0 +1,37 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: keepalived.mk
+    dest: /root/Makefile.d/keepalived.mk
+
+- name: dependencies
+  notify: restart keepalived
+  ansible.builtin.package:
+    state: present
+    name:
+      - keepalived
+      - socat
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/keepalived
+    mode: 0750
+    state: directory
+
+- name: keepalived.conf
+  ansible.builtin.template:
+    src: keepalived.conf
+    dest: /etc/keepalived/keepalived.conf
+
+- name: service
+  notify: restart keepalived
+  ansible.builtin.template:
+    src: keepalived.service
+    dest: /etc/systemd/system/keepalived.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: keepalived.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

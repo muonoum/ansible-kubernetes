@@ -1,0 +1,8 @@
+- name: restart controller-manager
+  throttle: 1
+  ansible.builtin.systemd:
+    name: kube-controller-manager
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

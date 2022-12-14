@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - addresspools.metallb.io.yaml
+  - bfdprofiles.metallb.io.yaml
+  - bgpadvertisements.metallb.io.yaml
+  - bgppeers.metallb.io.yaml
+  - communities.metallb.io.yaml
+  - ipaddresspools.metallb.io.yaml
+  - l2advertisements.metallb.io.yaml

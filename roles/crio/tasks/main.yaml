@@ -1,0 +1,79 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: crio.mk
+    dest: /root/Makefile.d/crio.mk
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/crio
+    state: directory
+
+- name: crio config
+  notify: restart crio
+  ansible.builtin.template:
+    src: crio.conf
+    dest: /etc/crio/crio.conf
+
+- name: crictl config
+  ansible.builtin.template:
+    src: crictl.yaml
+    dest: /etc/crictl.yaml
+
+- name: configure modprobe
+  ansible.builtin.copy:
+    content: |
+      overlay
+      br_netfilter
+    dest: /etc/modules-load.d/kube.conf
+
+- name: load modules
+  loop: [overlay, br_netfilter]
+  changed_when: no
+  ansible.builtin.command:
+    cmd: "modprobe {{ item }}"
+
+- name: configure sysctl
+  notify: restart crio
+  loop:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.ipv4.ip_forward
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: 1
+    sysctl_file: /etc/sysctl.d/kube.conf
+    reload: yes
+
+- name: crio binary
+  notify: restart crio
+  ansible.builtin.copy:
+    src: "crio-{{ crio_version }}-{{ node_arch }}"
+    dest: /usr/bin/crio
+    mode: 0755
+
+- name: runc binary
+  notify: restart crio
+  ansible.builtin.copy:
+    src: "runc-{{ runc_version }}-{{ node_arch }}"
+    dest: /usr/bin/runc
+    mode: 0755
+
+- name: crictl binary
+  ansible.builtin.copy:
+    src: "crictl-{{ crictl_version }}-{{ node_arch }}"
+    dest: /usr/bin/crictl
+    mode: 0755
+
+- name: service
+  notify: restart crio
+  ansible.builtin.template:
+    src: crio.service
+    dest: /etc/systemd/system/crio.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: crio.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

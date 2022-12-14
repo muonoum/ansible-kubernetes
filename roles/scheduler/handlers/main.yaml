@@ -1,0 +1,8 @@
+- name: restart scheduler
+  throttle: 1
+  ansible.builtin.systemd:
+    name: kube-scheduler
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

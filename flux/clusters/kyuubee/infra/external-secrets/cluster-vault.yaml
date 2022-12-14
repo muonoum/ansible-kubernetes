@@ -1,0 +1,22 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: cluster-vault
+
+spec:
+  provider:
+    vault:
+      server: https://vault:8200
+      path: kv
+
+      caProvider:
+        type: ConfigMap
+        namespace: external-secrets
+        name: kube-root-ca.crt
+        key: ca.crt
+
+      auth:
+        tokenSecretRef:
+          name: vault-token
+          namespace: external-secrets
+          key: token

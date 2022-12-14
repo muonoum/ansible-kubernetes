@@ -1,0 +1,113 @@
+- name: ssh directory
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: 0750
+
+- name: ssh private key
+  ansible.builtin.copy:
+    src: setup/control-plane-ssh
+    dest: /root/.ssh/id_ed25519
+    mode: 0600
+
+- name: ssh public key
+  ansible.builtin.copy:
+    src: setup/control-plane-ssh.pub
+    dest: /root/.ssh/authorized_keys
+    mode: 0640
+
+- name: group
+  ansible.builtin.group:
+    name: control-plane
+    state: present
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/control-plane
+    state: directory
+    owner: root
+    group: control-plane
+    mode: 0750
+
+- name: root certificate
+  ansible.builtin.copy:
+    src: setup/root.crt
+    dest: /etc/control-plane/root.crt
+    owner: root
+    group: control-plane
+    mode: 0640
+
+- name: control-plane issuer
+  ansible.builtin.include_role:
+    name: certificate/issuer
+  vars:
+    common_name: control-plane-issuer
+    path: /etc/control-plane/issuer
+    group: control-plane
+    owner: root
+    key_mode: '0640'
+
+- name: proxy issuer
+  ansible.builtin.include_role:
+    name: certificate/issuer
+  vars:
+    common_name: proxy-issuer
+    path: /etc/control-plane/proxy-issuer
+    group: control-plane
+    owner: root
+    key_mode: '0640'
+
+- name: admin client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    path: /etc/control-plane/admin
+    chain_path: /etc/control-plane/admin.chain
+    issuer: /etc/control-plane/issuer
+    common_name: admin
+    organization_name: system:masters
+    group: control-plane
+    owner: root
+
+- name: admin kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    path: /etc/control-plane/admin.kubeconfig
+    certificate: /etc/control-plane/admin.chain
+    key: /etc/control-plane/admin.key
+    root: /etc/control-plane/root.crt
+    url: "{{ apiserver_url }}"
+    group: control-plane
+    owner: root
+    user: admin
+
+- block:
+    - run_once: yes
+      block:
+        - name: service account private key
+          community.crypto.openssl_privatekey:
+            path: /etc/control-plane/service-account.key
+            group: control-plane
+            owner: root
+            mode: 0640
+
+        - name: service account public key
+          community.crypto.openssl_publickey:
+            path: /etc/control-plane/service-account.pub
+            privatekey_path: /etc/control-plane/service-account.key
+            group: control-plane
+            owner: root
+            mode: 0640
+
+    - name: synchronize
+      when: inventory_hostname != groups.control_plane[0]
+      delegate_to: "{{ groups.control_plane[0] }}"
+      loop:
+        - service-account.key
+        - service-account.pub
+      synchronize:
+        src: "/etc/control-plane/{{ item }}"
+        dest: /etc/control-plane/
+
+

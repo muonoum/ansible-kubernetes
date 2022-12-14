@@ -1,0 +1,14 @@
+- delegate_to: localhost
+  connection: local
+  become: no
+  run_once: yes
+  block:
+    - name: "{{ path }} : apply"
+      register: apply
+      command: >-
+        kubectl --kubeconfig private/admin.kubeconfig
+        apply -k {{ path }}
+
+    - name: "{{ path }} : output"
+      debug:
+        var: apply.stdout_lines

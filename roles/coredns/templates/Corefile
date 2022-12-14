@@ -1,0 +1,13 @@
+.:53 {
+  log
+  health
+  errors
+  cache
+
+  hosts /etc/coredns/hosts {
+    ttl 30
+    fallthrough
+  }
+
+  forward . {{ upstream_dns }}
+}

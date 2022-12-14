@@ -1,0 +1,87 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: controller-manager.mk
+    dest: /root/Makefile.d/controller-manager.mk
+
+- name: user
+  notify: restart controller-manager
+  ansible.builtin.user:
+    name: kube-controller-manager
+    shell: /usr/sbin/nologin
+    home: /var/lib/kube-controller-manager
+    groups: [control-plane]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kube-controller-manager
+    state: directory
+    owner: kube-controller-manager
+    group: kube-controller-manager
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kube-controller-manager
+    state: directory
+    owner: kube-controller-manager
+    group: kube-controller-manager
+    mode: 0750
+
+- name: controller-manager server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart controller-manager
+    path: /etc/kube-controller-manager/server
+    chain_path: /etc/kube-controller-manager/server.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-controller-manager
+    subject_alt_names: "{{ controller_manager_subject_alt_names }}"
+    owner: kube-controller-manager
+
+- name: controller-manager client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart controller-manager
+    path: /etc/kube-controller-manager/client
+    chain_path: /etc/kube-controller-manager/client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: system:kube-controller-manager
+    organization_name: system:kube-controller-manager
+    owner: kube-controller-manager
+
+- name: controller-manager kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart controller-manager
+    path: /etc/kube-controller-manager/client.kubeconfig
+    certificate: /etc/kube-controller-manager/client.chain
+    key: /etc/kube-controller-manager/client.key
+    root: /etc/control-plane/root.crt
+    url: "{{ apiserver_url }}"
+    user: system:kube-controller-manager
+    owner: kube-controller-manager
+
+- name: binary
+  notify: restart controller-manager
+  ansible.builtin.copy:
+    src: "kube-controller-manager-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kube-controller-manager
+    mode: 0755
+
+- name: service
+  notify: restart controller-manager
+  ansible.builtin.template:
+    src: kube-controller-manager.service
+    dest: /etc/systemd/system/kube-controller-manager.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kube-controller-manager.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

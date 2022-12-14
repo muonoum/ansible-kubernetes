@@ -1,0 +1,8 @@
+- name: restart apiserver
+  throttle: 1
+  ansible.builtin.systemd:
+    name: kube-apiserver
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

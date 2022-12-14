@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: prometheus
+
+resources:
+  - ClusterRole--prometheus-operator.yml
+  - ClusterRoleBinding--prometheus-operator.yml
+  - Deployment--prometheus-operator.yml
+  - Service--prometheus-operator.yml
+  - ServiceAccount--prometheus-operator.yml

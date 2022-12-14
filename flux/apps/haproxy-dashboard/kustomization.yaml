@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: haproxy-dashboard
+
+commonLabels:
+  app.kubernetes.io/part-of: haproxy-dashboard
+
+configMapGenerator:
+  - name: haproxy-reader
+    literals:
+      - READER_SOURCE_URL=https://node-dcb3aa11/?stats;csv
+
+images:
+  - name: reader-image
+    newName: ttl.sh/reader-9f6bbed6-ed83-44bf-a823-21e825559d75
+  - name: dashboard-image
+    newName: ttl.sh/dashboard-d89375e4-de80-4287-a04c-739f148e07d6
+
+resources:
+  - namespace.yaml
+  - route.yaml
+  - service-monitor.yaml
+  - dashboard
+  - reader

@@ -1,0 +1,21 @@
+- name: private key
+  community.crypto.openssl_privatekey:
+    path: "{{ path }}.key"
+
+- name: request
+  community.crypto.openssl_csr:
+    path: "{{ path }}.req"
+    privatekey_path: "{{ path }}.key"
+    common_name: "{{ common_name }}"
+    use_common_name_for_san: no
+    basic_constraints: ["CA:TRUE"]
+    basic_constraints_critical: yes
+    key_usage: [keyCertSign]
+    key_usage_critical: yes
+
+- name: certificate
+  community.crypto.x509_certificate:
+    path: "{{ path }}.crt"
+    csr_path: "{{ path }}.req"
+    privatekey_path: "{{ path }}.key"
+    provider: selfsigned

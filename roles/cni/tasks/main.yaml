@@ -1,0 +1,27 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: cni.mk
+    dest: /root/Makefile.d/cni.mk
+
+- name: plugin directory
+  ansible.builtin.file:
+    path: /opt/cni/bin
+    state: directory
+
+- name: plugins
+  notify: restart containerd
+  ansible.builtin.unarchive:
+    creates: /opt/cni/bin/bridge
+    src: "cni-plugins-linux-{{ node_arch }}-v{{ cni_version }}.tar"
+    dest: /opt/cni/bin
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/cni/net.d
+    state: directory
+
+- name: config
+  notify: restart containerd
+  ansible.builtin.template:
+    src: kube.json
+    dest: /etc/cni/net.d/kube.conflist

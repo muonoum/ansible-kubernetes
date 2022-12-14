@@ -1,0 +1,19 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Alert
+metadata:
+  name: slack
+
+spec:
+  summary: kyuubee
+  eventSeverity: info
+  eventSources:
+    - kind: GitRepository
+      name: '*'
+    - kind: Kustomization
+      name: '*'
+  exclusionList:
+    - Dependencies do not meet ready condition
+    - addresspools.metallb.io configured
+    - bgppeers.metallb.io configured
+  providerRef:
+    name: slack

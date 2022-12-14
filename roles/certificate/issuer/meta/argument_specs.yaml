@@ -1,0 +1,12 @@
+argument_specs:
+  main:
+    options:
+      path:
+        required: yes
+        type: str
+      common_name:
+        required: yes
+        type: str
+      key_mode:
+        default: 0600
+        type: int

@@ -1,0 +1,8 @@
+- name: restart etcd
+  throttle: 1
+  ansible.builtin.systemd:
+    name: etcd
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

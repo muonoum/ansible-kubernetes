@@ -1,0 +1,5 @@
+- name: binary
+  ansible.builtin.copy:
+    src: "kubectl-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kubectl
+    mode: 0755

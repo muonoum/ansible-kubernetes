@@ -1,0 +1,8 @@
+- name: restart coredns
+  throttle: 1
+  ansible.builtin.systemd:
+    name: coredns
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

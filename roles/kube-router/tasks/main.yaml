@@ -1,0 +1,83 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: kube-router.mk
+    dest: /root/Makefile.d/kube-router.mk
+
+- name: dependencies
+  ansible.builtin.package:
+    state: present
+    name:
+      - conntrack
+      - ipset
+      - ipvsadm
+
+- name: user
+  notify: restart kube-router
+  ansible.builtin.user:
+    name: kube-router
+    shell: /usr/sbin/nologin
+    home: /var/lib/kube-router
+    groups: [worker]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kube-router
+    state: directory
+    owner: kube-router
+    group: kube-router
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kube-router
+    state: directory
+    owner: kube-router
+    group: kube-router
+    mode: 0750
+
+- name: kube-router client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart kube-router
+    path: /etc/kube-router/client
+    chain_path: /etc/kube-router/client.chain
+    issuer: /etc/worker/issuer
+    common_name: kube-router
+    organization_name: kube-router
+    owner: kube-router
+
+- name: kube-router kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart kube-router
+    path: /etc/kube-router/client.kubeconfig
+    certificate: /etc/kube-router/client.chain
+    key: /etc/kube-router/client.key
+    root: /etc/worker/root.crt
+    url: "{{ apiserver_url }}"
+    owner: kube-router
+    user: kube-router
+
+- name: binary
+  notify: restart kube-router
+  ansible.builtin.copy:
+    src: "kube-router-{{ kube_router_version }}-{{ node_arch }}"
+    dest: /usr/bin/kube-router
+    mode: 0755
+
+- name: service
+  notify: restart kube-router
+  ansible.builtin.template:
+    src: kube-router.service
+    dest: /etc/systemd/system/kube-router.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kube-router.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

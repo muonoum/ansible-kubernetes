@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: haproxy-reader
+
+spec:
+  ports:
+    - name: http-reader
+      port: 3210
+  selector:
+    app.kubernetes.io/name: haproxy-reader

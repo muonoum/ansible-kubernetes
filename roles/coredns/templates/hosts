@@ -1,0 +1,4 @@
+{{ load_balancer_address }} load-balancer {{ service_names | join(' ') }}
+{% for name, vars in hostvars.items() %}
+{{ vars['node_address'] }} {{ vars['node_name'] }}
+{% endfor %}

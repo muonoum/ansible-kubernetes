@@ -1,0 +1,106 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: haproxy.mk
+    dest: /root/Makefile.d/haproxy.mk
+
+- name: dependencies
+  notify: restart haproxy
+  ansible.builtin.package:
+    state: present
+    name:
+      - haproxy
+      - socat
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/haproxy
+    mode: 0750
+    state: directory
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/haproxy
+    mode: 0700
+    state: directory
+
+- name: certs directory
+  ansible.builtin.file:
+    path: /var/lib/haproxy/certs
+    mode: 0700
+    state: directory
+
+- name: ca-certs directory
+  ansible.builtin.file:
+    path: /var/lib/haproxy/ca-certs
+    mode: 0700
+    state: directory
+
+- name: root certificate
+  ansible.builtin.copy:
+    src: setup/root.crt
+    dest: /var/lib/haproxy/ca-certs/root.crt
+    mode: 0640
+
+- name: haproxy issuer
+  ansible.builtin.include_role:
+    name: certificate/issuer
+  vars:
+    common_name: haproxy-issuer
+    path: /etc/haproxy/issuer
+
+- name: services certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart haproxy
+    path: /etc/haproxy/services
+    bundle_path: /var/lib/haproxy/certs/services.bundle
+    issuer: /etc/haproxy/issuer
+    common_name: haproxy-services
+    subject_alt_names: "{{ services_subject_alt_names }}"
+
+- name: stats certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart haproxy
+    path: /etc/haproxy/stats
+    bundle_path: /var/lib/haproxy/certs/stats.bundle
+    issuer: /etc/haproxy/issuer
+    common_name: haproxy-stats
+    subject_alt_names: "{{ stats_subject_alt_names }}"
+
+- name: sysctl
+  loop:
+    - { name: net.ipv4.ip_nonlocal_bind, value: 1 }
+  loop_control:
+    label: "{{ item.name }} = {{ item.value }}"
+  ansible.builtin.sysctl:
+    sysctl_file: /etc/sysctl.d/haproxy.conf
+    state: present
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    reload: yes
+
+- name: service
+  notify: restart haproxy
+  ansible.builtin.template:
+    src: haproxy.service
+    dest: /etc/systemd/system/haproxy.service
+
+- name: configuration
+  notify: restart haproxy
+  vars:
+    check_token: "{{ lookup('ansible.builtin.file', 'setup/apiserver-check-token') }}"
+  ansible.builtin.template:
+    validate: haproxy -c -f %s
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: start
+  ansible.builtin.systemd:
+    name: haproxy.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

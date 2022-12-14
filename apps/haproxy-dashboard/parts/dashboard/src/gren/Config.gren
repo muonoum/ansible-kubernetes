@@ -1,0 +1,98 @@
+module Config exposing ( Config, default, parse )
+
+import Url exposing ( Url )
+import Url.Parser as Url exposing ( (<?>) )
+import Url.Parser.Query as Query
+
+
+type alias Config =
+    { selected : Array String
+    , search : String
+    , showTerms : Array String
+    , hideTerms : Array String
+    }
+
+
+default : Config
+default =
+    { selected = []
+    , search = ""
+    , showTerms = []
+    , hideTerms = []
+    }
+
+
+configure : Config -> String -> String -> String -> Config
+configure config flags search selected =
+    default
+        |> configureFlags flags
+        |> configureSearch search
+        |> configureSelected selected
+
+
+configureFlags : String -> Config -> Config
+configureFlags flags config =
+    let
+        present v =
+            String.contains v flags
+
+        absent =
+            not << present
+    in
+    config
+
+
+configureSearch : String -> Config -> Config
+configureSearch search config =
+    let
+        words =
+            String.words search
+
+        { trues = hideTerms, falses = showTerms } =
+            Array.partition (String.startsWith "!") words
+    in
+    { config
+        | search = search
+        , showTerms = showTerms
+        , hideTerms =
+            Array.map (String.dropLeft 1) hideTerms
+                |> Array.filter (not << String.isEmpty)
+    }
+
+
+configureSelected : String -> Config -> Config
+configureSelected selected config =
+    let
+        check v =
+            if String.isEmpty v then
+                Nothing
+            else
+                Just v
+    in
+    { config
+        | selected =
+            String.split "," selected
+                |> Array.filterMap check
+    }
+
+
+parse : Url -> Config -> Config
+parse url config =
+    Url.parse (parser config) url
+        |> Maybe.withDefault config
+
+
+parser : Config -> Url.Parser (Config -> b) b
+parser config =
+    Url.top
+        <?> option "flags"
+        <?> option "search"
+        <?> option "selected"
+        |> Url.map (configure config)
+
+
+option : String -> Query.Parser String
+option n =
+    Array.first
+        >> Maybe.withDefault ""
+        |> Query.custom n

@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../infra/external-secrets/crds
+  - ../../../infra/flux/crds
+  - ../../../infra/gateway-api/crds
+  - ../../../infra/metallb/standalone/crds
+  - ../../../infra/prometheus/crds

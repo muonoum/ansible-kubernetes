@@ -1,0 +1,11 @@
+*arm64*
+*arm32*
+*amd64*
+*.key
+.DS_Store
+/library/junkbox
+/setup
+/temp
+/private
+/vendor
+!/vendor/Makefile

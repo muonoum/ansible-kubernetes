@@ -1,0 +1,67 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: coredns.mk
+    dest: /root/Makefile.d/coredns.mk
+
+- name: user
+  notify: restart coredns
+  ansible.builtin.user:
+    name: coredns
+    shell: /usr/sbin/nologin
+    home: /var/lib/coredns
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/coredns
+    mode: 0700
+    state: directory
+    owner: coredns
+    group: coredns
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/coredns
+    state: directory
+    owner: coredns
+    group: coredns
+    mode: 0750
+
+- name: hosts
+  notify: restart coredns
+  ansible.builtin.template:
+    src: hosts
+    dest: /etc/coredns/hosts
+    owner: coredns
+    group: coredns
+    mode: 0640
+
+- name: Corefile
+  notify: restart coredns
+  ansible.builtin.template:
+    src: Corefile
+    dest: /etc/coredns/Corefile
+    owner: coredns
+    group: coredns
+    mode: 0640
+
+- name: binary
+  notify: restart coredns
+  ansible.builtin.copy:
+    src: "coredns-{{ coredns_version }}-{{ node_arch }}"
+    dest: /usr/bin/coredns
+    mode: 0755
+
+- name: service
+  notify: restart coredns
+  ansible.builtin.template:
+    src: coredns.service
+    dest: /etc/systemd/system/coredns.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: coredns.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

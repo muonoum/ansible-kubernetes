@@ -1,0 +1,140 @@
+- name: setup
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tags: [setup, always]
+
+  pre_tasks:
+    - name: directory
+      ansible.builtin.file:
+        path: setup
+        state: directory
+
+  roles:
+    - role: certificate/root
+      tags: [root]
+      vars:
+        common_name: root
+        path: setup/root
+
+    - name: control-plane ssh-keys
+      role: ssh-keys
+      tags: [ssh-keys]
+      vars:
+        path: setup/control-plane-ssh
+
+    - name: worker ssh-keys
+      role: ssh-keys
+      tags: [ssh-keys]
+      vars:
+        path: setup/worker-ssh
+
+  tasks:
+    - name: apiserver encryption key
+      ansible.builtin.copy:
+        dest: setup/apiserver-encryption-key
+        content: >-
+          {{ lookup('community.general.random_string',
+                    length=32, base64=true) }}
+
+    - name: apiserver check token
+      ansible.builtin.copy:
+        dest: setup/apiserver-check-token
+        content: >-
+          {{ lookup('community.general.random_string',
+                    length=32, special=false) }}
+
+- name: node
+  hosts: all
+  tags: [node, always]
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: node
+
+    - role: rpi
+      tags: [rpi]
+      when: node_platform == 'pi'
+
+- name: vault
+  hosts: vault
+  tags: [vault]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: vault
+
+- name: dns
+  hosts: dns
+  tags: [dns]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: coredns
+      tags: [coredns]
+
+- name: storage
+  hosts: storage
+  tags: [storage]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: minio
+      tags: [minio]
+
+- name: load-balancer
+  hosts: load_balancer
+  tags: [load-balancer]
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: keepalived
+      tags: [keepalived]
+
+    - role: haproxy
+      tags: [haproxy]
+
+- name: etcd
+  hosts: etcd
+  tags: [etcd]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: etcd
+
+- name: control-plane
+  hosts: control_plane
+  tags: [control-plane]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: control-plane
+
+    - role: apiserver
+      tags: [apiserver]
+
+    - role: controller-manager
+      tags: [controller-manager]
+
+    - role: scheduler
+      tags: [scheduler]
+
+    - role: konnectivity-server
+      tags: [konnectivity-server]
+
+- name: worker
+  hosts: worker
+  tags: [worker]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: worker
+
+    - role: cni
+      tags: [cni]
+
+    - role: containerd
+      tags: [containerd]
+
+    - role: kubelet
+      tags: [kubelet]

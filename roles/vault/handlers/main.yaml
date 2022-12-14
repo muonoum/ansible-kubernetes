@@ -1,0 +1,8 @@
+- name: restart vault
+  throttle: 1
+  ansible.builtin.systemd:
+    name: vault
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

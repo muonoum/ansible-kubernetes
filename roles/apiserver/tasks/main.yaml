@@ -1,0 +1,138 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: apiserver.mk
+    dest: /root/Makefile.d/apiserver.mk
+
+- name: user
+  notify: restart apiserver
+  ansible.builtin.user:
+    name: kube-apiserver
+    shell: /usr/sbin/nologin
+    home: /var/lib/kube-apiserver
+    groups: [control-plane]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kube-apiserver
+    state: directory
+    owner: kube-apiserver
+    group: kube-apiserver
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kube-apiserver
+    state: directory
+    owner: kube-apiserver
+    group: kube-apiserver
+    mode: 0750
+
+- name: apiserver server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart apiserver
+    path: /etc/kube-apiserver/server
+    chain_path: /etc/kube-apiserver/server.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-apiserver
+    subject_alt_names: "{{ apiserver_subject_alt_names }}"
+    owner: kube-apiserver
+
+- name: apiserver etcd client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart apiserver
+    path: /etc/kube-apiserver/etcd-client
+    chain_path: /etc/kube-apiserver/etcd-client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-apiserver
+    owner: kube-apiserver
+
+- name: apiserver kubelet client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart apiserver
+    path: /etc/kube-apiserver/kubelet-client
+    chain_path: /etc/kube-apiserver/kubelet-client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-apiserver
+    organization_name: system:masters
+    owner: kube-apiserver
+
+- name: apiserver proxy client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart apiserver
+    path: /etc/kube-apiserver/proxy-client
+    chain_path: /etc/kube-apiserver/proxy-client.chain
+    issuer: /etc/control-plane/proxy-issuer
+    common_name: proxy-client
+    owner: kube-apiserver
+
+- name: apiserver konnectivity client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart apiserver
+    path: /etc/kube-apiserver/konnectivity-client
+    chain_path: /etc/kube-apiserver/konnectivity-client.chain
+    issuer: /etc/control-plane/issuer
+    common_name: kube-apiserver
+    owner: kube-apiserver
+
+- name: static tokens
+  notify: restart apiserver
+  vars:
+    check_token: "{{ lookup('ansible.builtin.file', 'setup/apiserver-check-token') }}"
+  ansible.builtin.template:
+    src: tokens.csv
+    dest: /etc/kube-apiserver/tokens.csv
+    owner: kube-apiserver
+    group: kube-apiserver
+    mode: 0600
+
+- name: encryption config
+  notify: restart apiserver
+  vars:
+    encryption_key: "{{ lookup('ansible.builtin.file', 'setup/apiserver-encryption-key') }}"
+  ansible.builtin.template:
+    src: encryption-config.yaml
+    dest: /etc/kube-apiserver/encryption-config.yaml
+    owner: kube-apiserver
+    group: kube-apiserver
+    mode: 0600
+
+- name: egress selector
+  notify: restart apiserver
+  ansible.builtin.template:
+    src: egress-selector-http-connect.yaml
+    dest: /etc/kube-apiserver/egress-selector.yaml
+    owner: kube-apiserver
+    group: kube-apiserver
+    mode: 0600
+
+- name: binary
+  notify: restart apiserver
+  ansible.builtin.copy:
+    src: "kube-apiserver-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kube-apiserver
+    mode: 0755
+
+- name: service
+  notify: restart apiserver
+  ansible.builtin.template:
+    src: kube-apiserver.service
+    dest: /etc/systemd/system/kube-apiserver.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kube-apiserver.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

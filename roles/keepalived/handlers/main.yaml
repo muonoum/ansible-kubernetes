@@ -1,0 +1,8 @@
+- name: restart keepalived
+  throttle: 1
+  ansible.builtin.systemd:
+    name: keepalived
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

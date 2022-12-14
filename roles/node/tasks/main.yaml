@@ -1,0 +1,59 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: Makefile
+    dest: /root/Makefile
+
+- name: Makefile.d
+  ansible.builtin.file:
+    path: /root/Makefile.d
+    state: directory
+
+- name: dependencies
+  ansible.builtin.package:
+    state: present
+    name:
+      - python3-cryptography
+
+- name: name
+  register: node_hash
+  delegate_to: localhost
+  connection: local
+  become: no
+  command:
+    cmd: >-
+      library/junkbox node-hash
+      {{ ansible_default_ipv4.macaddress | lower }}
+
+- name: facts
+  set_fact:
+    node_address: "{{ ansible_default_ipv4.address }}"
+    node_name: "node-{{ node_hash.stdout }}"
+
+- name: hostname
+  notify: reboot
+  ansible.builtin.hostname:
+    name: "{{ node_name }}"
+
+- name: hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127.0.1.1'
+    line: "127.0.1.1 {{ node_name }}"
+
+- name: resolv.conf
+  ansible.builtin.template:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+
+- block:
+    - name: check for resolvconf.conf
+      register: resolvconf
+      ansible.builtin.stat:
+        path: /etc/resolvconf.conf
+
+    - name: disable resolvconf
+      when: resolvconf.stat.exists
+      ansible.builtin.lineinfile:
+        path: "{{ resolvconf.stat.path }}"
+        regexp: '^resolvconf='
+        line: resolvconf=NO

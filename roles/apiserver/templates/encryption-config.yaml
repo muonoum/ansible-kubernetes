@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: EncryptionConfig
+resources:
+  - resources: [secrets]
+    providers:
+      - identity: {}
+      - aescbc:
+          keys:
+            - name: key1
+              secret: "{{ encryption_key }}"

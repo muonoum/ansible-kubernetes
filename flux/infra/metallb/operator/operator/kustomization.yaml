@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - Namespace--metallb-system.yaml
+  - Role--leader-election-role.yaml
+  - Role--manager-role.yaml
+  - ClusterRole--manager-role.yaml
+  - RoleBinding--leader-election-rolebinding.yaml
+  - RoleBinding--manager-rolebinding.yaml
+  - ClusterRoleBinding--manager-rolebinding.yaml
+  - Secret--metallb-operator-webhook-server-cert.yaml
+  - Secret--webhook-server-cert.yaml
+  - Service--metallb-operator-webhook-service.yaml
+  - Service--webhook-service.yaml
+  - Deployment--metallb-operator-controller-manager.yaml
+  - Deployment--metallb-operator-webhook-server.yaml
+  - ValidatingWebhookConfiguration--metallb-operator-webhook-configuration.yaml
+  - ValidatingWebhookConfiguration--metallb-webhook-configuration.yaml
+  - ServiceAccount--controller.yaml
+  - ServiceAccount--speaker.yaml
+  - Role--controller.yaml
+  - Role--pod-lister.yaml
+  - Role--speaker.yaml
+  - ClusterRole--metallb-system:kube-rbac-proxy.yaml
+  - ClusterRole--metallb-system:controller.yaml
+  - ClusterRole--metallb-system:speaker.yaml
+  - RoleBinding--controller.yaml
+  - RoleBinding--pod-lister.yaml
+  - RoleBinding--speaker.yaml
+  - ClusterRoleBinding--kube-rbac-proxy.yaml
+  - ClusterRoleBinding--metallb-system:controller.yaml
+  - ClusterRoleBinding--metallb-system:speaker.yaml

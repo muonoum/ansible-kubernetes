@@ -1,0 +1,41 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: minio.mk
+    dest: /root/Makefile.d/minio.mk
+
+- name: user
+  notify: restart minio
+  ansible.builtin.user:
+    name: minio
+    shell: /usr/sbin/nologin
+    home: /var/lib/minio
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/minio
+    state: directory
+    owner: minio
+    group: minio
+    mode: 0750
+
+- name: binary
+  notify: restart minio
+  ansible.builtin.copy:
+    src: "minio-{{ minio_version }}-{{ node_arch }}"
+    dest: /usr/bin/minio
+    mode: 0755
+
+- name: service
+  notify: restart minio
+  ansible.builtin.template:
+    src: minio.service
+    dest: /etc/systemd/system/minio.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: minio.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

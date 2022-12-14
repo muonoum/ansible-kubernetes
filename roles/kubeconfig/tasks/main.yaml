@@ -1,0 +1,54 @@
+- block:
+    - name: check existing
+      register: kubeconfig
+      ansible.builtin.stat:
+        path: "{{ path }}"
+
+    - name: remove existing
+      ansible.builtin.file:
+        path: "{{ path }}"
+        state: absent
+
+    - name: "set-cluster : {{ cluster_name }}"
+      ansible.builtin.command: >-
+        kubectl config set-cluster {{ cluster_name }}
+        --kubeconfig={{ path }}
+        --certificate-authority={{ root }}
+        --embed-certs=true
+        --server={{ url }}
+
+    - name: "set-credentials : {{ user }}"
+      ansible.builtin.command: >-
+        kubectl config set-credentials {{ user }}
+        --kubeconfig={{ path }}
+        --client-certificate={{ certificate }}
+        --client-key={{ key }}
+        --embed-certs=true
+
+    - name: "set-context : default"
+      ansible.builtin.command: >-
+        kubectl config set-context default
+        --kubeconfig={{ path }}
+        --cluster={{ cluster_name }}
+        --user={{ user }}
+
+    - name: "use-context : default"
+      ansible.builtin.command: >-
+        kubectl config use-context default
+        --kubeconfig={{ path }}
+
+    - name: permissions
+      ansible.builtin.file:
+        path: "{{ path }}"
+        state: touch
+        owner: "{{ owner|default(omit) }}"
+        group: "{{ group|default(owner|default(omit)) }}"
+        mode: 0600
+
+  always:
+    - name: compare
+      register: new_kubeconfig
+      notify: "{{ notify|default(omit) }}"
+      changed_when: not kubeconfig.stat.exists or kubeconfig.stat.checksum != new_kubeconfig.stat.checksum
+      ansible.builtin.stat:
+        path: "{{ path }}"

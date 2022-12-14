@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../infra/gateway-api/system
+  - ../../../infra/kube-system
+  - external-secrets
+  - flux-system
+  - istio-system
+  - kiali
+  - metallb-system
+  - prometheus
+

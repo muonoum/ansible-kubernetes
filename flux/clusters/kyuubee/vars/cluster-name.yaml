@@ -1,0 +1,11 @@
+source:
+  kind: ConfigMap
+  name: cluster-vars
+  fieldPath: data.clusterName
+targets:
+  - select:
+      kind: Kustomization
+    fieldPaths: [spec.path]
+    options:
+      delimiter: '/'
+      index: 3

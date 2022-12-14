@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: prometheus
+
+resources:
+  - ../../../../infra/prometheus/operator
+  - namespace.yaml
+  - prometheus.yaml
+  - rbac.yaml
+  - route.yaml
+  - service-monitor.yaml
+  - service.yaml

@@ -1,0 +1,86 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: vault.mk
+    dest: /root/Makefile.d/vault.mk
+
+- name: user
+  notify: restart vault
+  ansible.builtin.user:
+    name: vault
+    shell: /usr/sbin/nologin
+    home: /var/lib/vault
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/vault
+    state: directory
+    owner: vault
+    group: vault
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/vault
+    state: directory
+    owner: vault
+    group: vault
+    mode: 0750
+
+- name: vault config
+  notify: restart vault
+  ansible.builtin.template:
+    src: config.hcl
+    dest: /etc/vault/config.hcl
+    owner: vault
+    group: vault
+    mode: 0640
+
+- name: root certificate
+  ansible.builtin.copy:
+    src: setup/root.crt
+    dest: /etc/vault/root.crt
+    owner: vault
+    group: vault
+    mode: 0640
+
+- name: vault issuer
+  ansible.builtin.include_role:
+    name: certificate/issuer
+  vars:
+    common_name: vault-issuer
+    path: /etc/vault/issuer
+    owner: vault
+
+- name: vault server certificate
+  ansible.builtin.include_role:
+    name: certificate/server
+  vars:
+    notify: restart vault
+    path: /etc/vault/server
+    chain_path: /etc/vault/server.chain
+    issuer: /etc/vault/issuer
+    common_name: vault
+    subject_alt_names: "{{ vault_subject_alt_names }}"
+    owner: vault
+
+- name: binary
+  notify: restart vault
+  ansible.builtin.copy:
+    src: "vault-{{ vault_version }}-{{ node_arch }}"
+    dest: /usr/bin/vault
+    mode: 0755
+
+- name: service
+  notify: restart vault
+  ansible.builtin.template:
+    src: vault.service
+    dest: /etc/systemd/system/vault.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: vault.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

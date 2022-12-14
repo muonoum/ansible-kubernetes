@@ -1,0 +1,14 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: cluster
+  namespace: flux-system
+
+spec:
+  url: ssh://git@github.com/spektroskop/kube
+  timeout: 50s
+  interval: 1m
+  ref:
+    branch: main
+  secretRef:
+    name: cluster-repo

@@ -1,0 +1,107 @@
+module Stats exposing ( Row, Group, Kind(..), decoder, rowOrder, groupOrder, group )
+
+import Dict exposing ( Dict )
+import Json.Decode as Decode exposing ( Decoder )
+import Lib.Decode as Decode
+
+type Kind = Frontend | Backend | Server
+
+type alias Group =
+    { kind : Kind
+    , row : Row
+    , rows : Array Row
+    }
+
+
+type alias Row =
+    { pxname : String
+    , svname : String
+    , qcur : Maybe Int
+    , qmax : Maybe Int
+    , scur : Int
+    , smax : Int
+    , status : String
+    , hrsp1xx : Maybe Int
+    , hrsp2xx : Maybe Int
+    , hrsp3xx : Maybe Int
+    , hrsp4xx : Maybe Int
+    , hrsp5xx : Maybe Int
+    }
+
+
+decoder : Decoder Row
+decoder =
+    let
+        toInt v =
+            case String.toInt v of
+                Just n -> Decode.succeed n
+                Nothing -> Decode.fail "expected int"
+    in
+    Decode.succeed
+        (\pxname svname qcur qmax scur smax status hrsp1xx hrsp2xx hrsp3xx hrsp4xx hrsp5xx ->
+            { pxname = pxname
+            , svname = svname
+            , qcur = qcur
+            , qmax = qmax
+            , scur = scur
+            , smax = smax
+            , status = status
+            , hrsp1xx = hrsp1xx
+            , hrsp2xx = hrsp2xx
+            , hrsp3xx = hrsp3xx
+            , hrsp4xx = hrsp4xx
+            , hrsp5xx = hrsp5xx
+            }
+        )
+        |> Decode.required "pxname" Decode.string
+        |> Decode.required "svname" Decode.string
+        |> Decode.optional "qcur" (Decode.string |> Decode.andThen toInt)
+        |> Decode.optional "qmax" (Decode.string |> Decode.andThen toInt)
+        |> Decode.required "scur" (Decode.string |> Decode.andThen toInt)
+        |> Decode.required "smax" (Decode.string |> Decode.andThen toInt)
+        |> Decode.required "status" Decode.string
+        |> Decode.optional "hrsp_1xx" (Decode.string |> Decode.andThen toInt)
+        |> Decode.optional "hrsp_2xx" (Decode.string |> Decode.andThen toInt)
+        |> Decode.optional "hrsp_3xx" (Decode.string |> Decode.andThen toInt)
+        |> Decode.optional "hrsp_4xx" (Decode.string |> Decode.andThen toInt)
+        |> Decode.optional "hrsp_5xx" (Decode.string |> Decode.andThen toInt)
+
+
+group : Array Row -> Array Group
+group rows =
+    let
+        set kind row rs =
+            { kind = kind, row = row, rows = rs }
+
+        add row v =
+            { v | rows = Array.pushLast row v.rows }
+
+        maybe row existing =
+            case { existing = existing, svname = row.svname } of
+                { existing = Nothing, svname = "BACKEND" } -> set Backend row []
+                { existing = Nothing, svname = "FRONTEND" } -> set Frontend row []
+                { existing = Nothing, svname = _ } -> set Server row [row]
+                { existing = Just v, svname = "BACKEND" } -> set Backend row v.rows
+                { existing = Just v, svname = "FRONTEND" } -> set Frontend row v.rows
+                { existing = Just v, svname = _ } -> add row v
+
+        update row groups =
+            Dict.update row.pxname (Just << maybe row) groups
+    in
+    Array.foldl update Dict.empty rows
+        |> Dict.values
+
+
+groupOrder : Group -> Group -> Order
+groupOrder a b =
+    case { aName = a.row.svname, bName = b.row.svname } of
+        { aName = "FRONTEND", bName = "BACKEND" } -> LT
+        { aName = "FRONTEND" } -> LT
+        { aName = "BACKEND", bName = "FRONTEND" } -> GT
+        { aName = "BACKEND" } -> GT
+        _ -> Basics.compare a.row.pxname b.row.pxname
+
+
+rowOrder : Row -> Row -> Order
+rowOrder a b =
+    Basics.compare a.svname b.svname

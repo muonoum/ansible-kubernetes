@@ -1,0 +1,8 @@
+argument_specs:
+  main:
+    options:
+      notify:
+        type: str
+      path:
+        required: yes
+        type: str

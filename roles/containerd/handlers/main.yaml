@@ -1,0 +1,8 @@
+- name: restart containerd
+  throttle: 1
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

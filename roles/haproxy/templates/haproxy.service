@@ -1,0 +1,15 @@
+[Unit]
+Wants=network.target
+After=network.target
+
+[Service]
+RuntimeDirectory=haproxy
+ExecStartPre=/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c -q
+ExecStart=/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -S /run/haproxy/master,mode,660
+ExecReload=/sbin/haproxy -f /etc/haproxy/haproxy.cfg -c -q
+ExecReload=/bin/kill -USR2 $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

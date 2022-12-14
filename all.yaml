@@ -1,0 +1,25 @@
+- import_playbook: deploy.yaml
+
+- import_playbook: admin.yaml
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - role: manifest
+      vars: { path: flux/infra/kube-system/kube-router }
+
+- import_playbook: cni.yaml
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - role: manifest
+      vars: { path: flux/infra/kube-system/coredns }
+
+    - role: manifest
+      vars: { path: flux/infra/kube-system/konnectivity }
+
+    - role: manifest
+      vars: { path: flux/infra/kube-system/metrics-server }

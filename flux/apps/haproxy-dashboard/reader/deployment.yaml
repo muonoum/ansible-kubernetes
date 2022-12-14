@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: haproxy-reader
+    app: haproxy-reader
+    version: 1.0.0
+  name: haproxy-reader
+
+spec:
+  selector:
+    matchLabels:
+      app: haproxy-reader
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: haproxy-reader
+        app: haproxy-reader
+        version: 1.0.0
+
+    spec:
+      containers:
+        - name: reader
+          imagePullPolicy: Always
+          image: reader-image
+
+          ports:
+            - name: web
+              containerPort: 3210
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: haproxy-reader
+
+          command: [/reader]
+          args: [
+            "--ca-cert=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+            "start",
+            "--log-format=console",
+            "--address=:3210"
+          ]

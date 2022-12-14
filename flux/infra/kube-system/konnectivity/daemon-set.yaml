@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: konnectivity-agent
+  labels:
+    k8s-app: konnectivity-agent
+
+spec:
+  selector:
+    matchLabels:
+      k8s-app: konnectivity-agent
+
+  template:
+    metadata:
+      labels:
+        k8s-app: konnectivity-agent
+
+    spec:
+      serviceAccountName: konnectivity-agent
+      priorityClassName: system-cluster-critical
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+
+      volumes:
+        - name: konnectivity-agent-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: system:konnectivity-server
+                  path: konnectivity-agent-token
+
+      containers:
+        - name: konnectivity-agent
+          image: us.gcr.io/k8s-artifacts-prod/kas-network-proxy/proxy-agent:v0.0.16
+          command: [/proxy-agent]
+          args:
+            - --v=2
+            - --ca-cert=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - --service-account-token-path=/var/run/secrets/tokens/konnectivity-agent-token
+            - --proxy-server-host=konnectivity
+            - --proxy-server-port=8132
+            - --admin-server-port=8133
+            - --health-server-port=8134
+
+          volumeMounts:
+            - mountPath: /var/run/secrets/tokens
+              name: konnectivity-agent-token
+
+          livenessProbe:
+            timeoutSeconds: 15
+            initialDelaySeconds: 15
+            httpGet:
+              port: 8134
+              path: /healthz

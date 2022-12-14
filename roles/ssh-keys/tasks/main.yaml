@@ -1,0 +1,5 @@
+- name: ssh keypair
+  notify: "{{ notify | default(omit) }}"
+  community.crypto.openssh_keypair:
+    type: ed25519
+    path: "{{ path }}"

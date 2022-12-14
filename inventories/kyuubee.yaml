@@ -1,0 +1,288 @@
+all:
+  hosts:
+    10.0.1.11:
+      node_platform: pi
+      node_arch: arm64
+
+    10.0.1.12:
+      node_platform: pi
+      node_arch: arm64
+
+    10.0.1.13:
+      node_platform: pi
+      node_arch: arm64
+
+    10.0.1.14:
+      node_platform: pi
+      node_arch: arm64
+
+  vars:
+    etcd_version: 3.5.6
+    kubernetes_version: 1.26.0
+    konnectivity_version: 0.0.0
+    cni_version: 1.1.1
+    containerd_version: 1.6.12
+    crio_version: 1.23.4
+    crictl_version: 1.25.0
+    runc_version: 1.1.4
+    kube_router_version: 1.5.3
+    coredns_version: 1.10.0
+    minio_version: RELEASE.2022-12-02T19-19-22Z
+    vault_version: 1.12.2
+
+    cluster_name: kyuubee
+    log_level: 2
+    load_balancer_address: 10.0.1.10
+    service_names: [etcd, apiserver, konnectivity, minio, vault]
+    apiserver_url: https://apiserver:6443
+    pod_range: 10.224.0.0/16
+    service_range: 10.96.0.0/12
+    cluster_dns: 10.96.0.10
+    upstream_dns: 10.0.1.1
+    cluster_domain: cluster.local
+
+  children:
+    vault:
+      hosts:
+        10.0.1.11:
+
+      vars:
+        vault_flags:
+          config: /etc/vault/config.hcl
+
+        vault_subject_alt_names:
+          - "DNS:vault"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+
+    dns:
+      hosts:
+        10.0.1.11:
+
+      vars:
+        coredns_flags:
+          conf: /etc/coredns/Corefile
+
+    storage:
+      hosts:
+        10.0.1.11:
+
+      vars:
+        minio_storage_path: /var/lib/minio
+
+        minio_flags:
+          address: "{{ node_address }}:9000"
+          console-address: "{{ node_address }}:9001"
+
+    load_balancer:
+      hosts:
+        10.0.1.11:
+          vrrp_state: MASTER
+          vrrp_priority: 101
+          unicast_peers: []
+
+      vars:
+        vrrp_id: 1
+        vrrp_interface: "{{ ansible_default_ipv4.interface }}"
+        vrrp_address: "{{ load_balancer_address }}/24"
+
+        services_subject_alt_names: >-
+          {{ ["DNS:"]
+           | product(service_names)
+           | map('join')
+           | list
+          }}
+
+        stats_subject_alt_names:
+          - "DNS:localhost"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+          - "IP:127.0.0.1"
+
+    etcd:
+      hosts:
+        10.0.1.12:
+
+      vars:
+        etcd_flags:
+          name: "{{ node_name }}"
+          data-dir: /var/lib/etcd
+          listen-metrics-urls: http://0.0.0.0:2378
+          listen-client-urls: https://0.0.0.0:2379
+          listen-peer-urls: https://0.0.0.0:2380
+          advertise-client-urls: https://etcd:2379
+          trusted-ca-file: /etc/etcd/root.crt
+          cert-file: /etc/etcd/server.chain
+          key-file: /etc/etcd/server.key
+          client-cert-auth: yes
+          peer-trusted-ca-file: /etc/etcd/root.crt
+          peer-cert-file: /etc/etcd/peer.chain
+          peer-key-file: /etc/etcd/peer.key
+          peer-client-cert-auth: yes
+          initial-advertise-peer-urls: "https://{{ node_name }}:2380"
+          initial-cluster-token: "{{ cluster_name }}"
+          initial-cluster-state: new
+          initial-cluster: >-
+            {{ groups['etcd']
+             | map('extract', hostvars)
+             | map(attribute='node_name')
+             | map('etcd_peer')
+             | join(',')
+            }}
+
+        etcd_server_subject_alt_names:
+          - "DNS:etcd"
+          - "DNS:localhost"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+          - "IP:127.0.0.1"
+
+        etcd_peer_subject_alt_names:
+          - "DNS:etcd"
+          - "DNS:localhost"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+          - "IP:127.0.0.1"
+
+    control_plane:
+      hosts:
+        10.0.1.12:
+
+      vars:
+        apiserver_flags:
+          v: "{{ log_level }}"
+          bind-address: 0.0.0.0
+          external-hostname: apiserver
+          advertise-address: "{{ load_balancer_address }}"
+          tls-cert-file: /etc/kube-apiserver/server.chain
+          tls-private-key-file: /etc/kube-apiserver/server.key
+          service-cluster-ip-range: "{{ service_range }}"
+          encryption-provider-config: /etc/kube-apiserver/encryption-config.yaml
+          anonymous-auth: no
+          authorization-mode: Node,RBAC
+          client-ca-file: /etc/control-plane/root.crt
+          token-auth-file: /etc/kube-apiserver/tokens.csv
+          # apiserver -> etcd
+          etcd-servers: https://etcd:2379
+          etcd-cafile: /etc/control-plane/root.crt
+          etcd-certfile: /etc/kube-apiserver/etcd-client.chain
+          etcd-keyfile: /etc/kube-apiserver/etcd-client.key
+          # apiserver -> kubelet
+          kubelet-certificate-authority: /etc/control-plane/root.crt
+          kubelet-client-certificate: /etc/kube-apiserver/kubelet-client.chain
+          kubelet-client-key: /etc/kube-apiserver/kubelet-client.key
+          # https://kubernetes.io/docs/tasks/extend-kubernetes/configure-aggregation-layer/
+          egress-selector-config-file: /etc/kube-apiserver/egress-selector.yaml
+          enable-aggregator-routing: yes
+          requestheader-client-ca-file: /etc/control-plane/proxy-issuer.crt
+          requestheader-allowed-names: proxy-client
+          requestheader-extra-headers-prefix: x-remote-extra-
+          requestheader-group-headers: x-remote-group
+          requestheader-username-headers: x-remote-user
+          proxy-client-cert-file: /etc/kube-apiserver/proxy-client.chain
+          proxy-client-key-file: /etc/kube-apiserver/proxy-client.key
+          # https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens
+          service-account-signing-key-file: /etc/control-plane/service-account.key
+          service-account-key-file: /etc/control-plane/service-account.pub
+          service-account-issuer: https://kubernetes.default.svc
+          service-account-jwks-uri: https://kubernetes.default.svc/openid/v1/jwks
+          api-audiences: https://kubernetes.default.svc
+
+        apiserver_subject_alt_names:
+          - "DNS:kubernetes"
+          - "DNS:kubernetes.default"
+          - "DNS:kubernetes.default.svc"
+          - "DNS:kubernetes.default.svc.cluster"
+          - "DNS:kubernetes.default.svc.cluster.local"
+          - "DNS:apiserver"
+          - "DNS:localhost"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+          - "IP:{{ load_balancer_address }}"
+          - "IP:10.96.0.1"
+          - "IP:127.0.0.1"
+
+        controller_manager_flags:
+          v: "{{ log_level }}"
+          bind-address: 0.0.0.0
+          cluster-name: "{{ cluster_name }}"
+          cluster-cidr: "{{ pod_range }}"
+          service-cluster-ip-range: "{{ service_range }}"
+          allocate-node-cidrs: true
+          client-ca-file: /etc/control-plane/root.crt
+          root-ca-file: /etc/control-plane/root.crt
+          tls-cert-file: /etc/kube-controller-manager/server.chain
+          tls-private-key-file: /etc/kube-controller-manager/server.key
+          kubeconfig: /etc/kube-controller-manager/client.kubeconfig
+          authentication-kubeconfig: /etc/kube-controller-manager/client.kubeconfig
+          authorization-kubeconfig: /etc/kube-controller-manager/client.kubeconfig
+          service-account-private-key-file: /etc/control-plane/service-account.key
+          use-service-account-credentials: yes
+          cluster-signing-cert-file: /etc/control-plane/issuer.crt
+          cluster-signing-key-file: /etc/control-plane/issuer.key
+          requestheader-client-ca-file: /etc/control-plane/proxy-issuer.crt
+
+        controller_manager_subject_alt_names:
+          - "DNS:{{ node_name }}"
+
+        scheduler_flags:
+          v: "{{ log_level }}"
+          bind-address: 0.0.0.0
+          authentication-tolerate-lookup-failure: no
+          tls-cert-file: /etc/kube-scheduler/server.chain
+          tls-private-key-file: /etc/kube-scheduler/server.key
+          kubeconfig: /etc/kube-scheduler/client.kubeconfig
+          authentication-kubeconfig: /etc/kube-scheduler/client.kubeconfig
+          authorization-kubeconfig: /etc/kube-scheduler/client.kubeconfig
+          client-ca-file: /etc/control-plane/root.crt
+
+        scheduler_subject_alt_names:
+          - "DNS:{{ node_name }}"
+
+        konnectivity_server_flags:
+          v: "{{ log_level }}"
+          admin-bind-address: 0.0.0.0
+          server-bind-address: 0.0.0.0
+          server-port: 8131
+          agent-port: 8132
+          admin-port: 8133
+          health-port: 8134
+          mode: http-connect
+          cluster-cert: /etc/konnectivity-server/server.chain
+          cluster-key: /etc/konnectivity-server/server.key
+          server-ca-cert: /etc/control-plane/root.crt
+          server-cert: /etc/konnectivity-server/server.chain
+          server-key: /etc/konnectivity-server/server.key
+          agent-namespace: kube-system
+          agent-service-account: konnectivity-agent
+          kubeconfig: /etc/konnectivity-server/client.kubeconfig
+          authentication-audience: system:konnectivity-server
+
+        konnectivity_server_subject_alt_names:
+          - "DNS:konnectivity"
+          - "DNS:localhost"
+          - "IP:127.0.0.1"
+
+    worker:
+      hosts:
+        10.0.1.13:
+        10.0.1.14:
+
+      vars:
+        kubelet_flags:
+          v: "{{ log_level }}"
+          container-runtime-endpoint: unix:///var/run/containerd/containerd.sock
+          root-dir: /var/lib/kubelet
+          config: /etc/kubelet/kubelet.yaml
+          kubeconfig: /etc/kubelet/client.kubeconfig
+
+        kubelet_subject_alt_names:
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
+
+        kube_router_flags:
+          kubeconfig: /etc/kube-router/client.kubeconfig
+          run-service-proxy: yes
+          run-router: yes
+          run-firewall: no
+          hairpin-mode: yes

@@ -1,0 +1,13 @@
+[Unit]
+After=network.target
+Wants=network.target
+
+[Service]
+ExecStart=/usr/bin/etcd {{ etcd_flags | cmdline }}
+User=etcd
+Group=etcd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
