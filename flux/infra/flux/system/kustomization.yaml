@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - Namespace--flux-system.yaml
+  - ServiceAccount--helm-controller.yaml
   - ServiceAccount--kustomize-controller.yaml
   - ServiceAccount--notification-controller.yaml
   - ServiceAccount--source-controller.yaml
@@ -12,6 +13,7 @@ resources:
   - Service--notification-controller.yaml
   - Service--source-controller.yaml
   - Service--webhook-receiver.yaml
+  - Deployment--helm-controller.yaml
   - Deployment--kustomize-controller.yaml
   - Deployment--notification-controller.yaml
   - Deployment--source-controller.yaml

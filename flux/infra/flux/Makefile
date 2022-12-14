@@ -3,8 +3,7 @@ junkbox := ../../../library/junkbox
 crds system: $(junkbox)
 	make -C ../../..
 
-	flux install --export \
-		--components source-controller,kustomize-controller,notification-controller | \
+	flux install --export | \
 				$(junkbox) split-yaml --overwrite \
 					--default 'system/{{.Kind}}--{{.Metadata.Name}}.yaml' \
 					--kind 'CustomResourceDefinition=crds/{{.Metadata.Name}}.yaml' -

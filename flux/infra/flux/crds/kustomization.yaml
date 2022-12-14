@@ -6,6 +6,7 @@ resources:
   - buckets.source.toolkit.fluxcd.io.yaml
   - gitrepositories.source.toolkit.fluxcd.io.yaml
   - helmcharts.source.toolkit.fluxcd.io.yaml
+  - helmreleases.helm.toolkit.fluxcd.io.yaml
   - helmrepositories.source.toolkit.fluxcd.io.yaml
   - kustomizations.kustomize.toolkit.fluxcd.io.yaml
   - ocirepositories.source.toolkit.fluxcd.io.yaml
