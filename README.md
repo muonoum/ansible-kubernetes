@@ -3,6 +3,11 @@
     export cluster=kyuubee
     export vault="-address https://vault:8200 -ca-cert setup/root.crt"
 
+## dependencies
+
+    brew install 1password/tap/1password-cli fluxcd/tap/flux ansible \
+        helm istioctl kubernetes-cli kustomize
+
 ## deploy
 
     make -C vendor
