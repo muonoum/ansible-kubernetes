@@ -16,18 +16,23 @@
 
 ## external-secrets
 
-    vault login -address https://vault:8200 -ca-cert setup/root.crt
-        $(op read 'op://kyuubee/vault/token')
+    for KEY in $(seq 1 3); do
+        vault operator unseal -address https://vault:8200 -ca-cert setup/root.crt \
+            $(op read op://kyuubee/vault/unseal${KEY})
+    done
 
-    vault kv put -address https://vault:8200 -ca-cert setup/root.crt
-        kv/flux-system/repo
-        identity="$(op read 'op://kyuubee/ssh/private key')"
-        identity.pub="$(op read 'op://kyuubee/ssh/public key')"
+    vault login -address https://vault:8200 -ca-cert setup/root.crt \
+        $(op read op://kyuubee/vault/token)
+
+    vault kv put -address https://vault:8200 -ca-cert setup/root.crt \
+        kv/flux-system/repo \
+        identity="$(op read 'op://kyuubee/ssh/private key')" \
+        identity.pub="$(op read 'op://kyuubee/ssh/public key')" \
         known_hosts="$(ssh-keyscan -t ecdsa github.com)"
 
     kubectl create ns external-secrets
 
-    kubectl -n external-secrets create secret generic vault-token
+    kubectl -n external-secrets create secret generic vault-token \
         --from-literal=token=$(op read op://kyuubee/vault/token)
 
     kubectl apply -k flux/infra/external-secrets/crds
