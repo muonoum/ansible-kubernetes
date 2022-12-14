@@ -46,6 +46,5 @@
 
     kubectl apply -k flux/infra/flux/crds
     kubectl apply -k flux/infra/flux/system
-    kubectl apply -f flux/clusters/kyuubee/cluster-repo-secret.yaml
-    kubectl apply -f flux/clusters/kyuubee/cluster-repo.yaml
-    kubectl apply -f flux/clusters/kyuubee/cluster.yaml
+
+    kubectl apply -k flux/clusters/kyuubee
