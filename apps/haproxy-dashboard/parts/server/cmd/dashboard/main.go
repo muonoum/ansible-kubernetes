@@ -29,6 +29,7 @@ func main() {
 	mux.Handle("/", staticHandler())
 
 	if config.Source != "" {
+		log.Info().Str("source", config.Source).Msg("proxy /stats")
 		url, err := url.Parse(config.Source)
 		cli.FatalIfErrorf(err)
 		proxy := web.Proxy(nil, url, config.Timeout, time.Hour*24)
