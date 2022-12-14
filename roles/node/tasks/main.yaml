@@ -45,15 +45,14 @@
     src: resolv.conf
     dest: /etc/resolv.conf
 
-- block:
-    - name: check for resolvconf.conf
-      register: resolvconf
-      ansible.builtin.stat:
-        path: /etc/resolvconf.conf
+- name: check for resolvconf.conf
+  register: resolvconf
+  ansible.builtin.stat:
+    path: /etc/resolvconf.conf
 
-    - name: disable resolvconf
-      when: resolvconf.stat.exists
-      ansible.builtin.lineinfile:
-        path: "{{ resolvconf.stat.path }}"
-        regexp: '^resolvconf='
-        line: resolvconf=NO
+- name: disable resolvconf
+  when: resolvconf.stat.exists
+  ansible.builtin.lineinfile:
+    path: "{{ resolvconf.stat.path }}"
+    regexp: '^resolvconf='
+    line: resolvconf=NO
