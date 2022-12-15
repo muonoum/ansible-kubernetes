@@ -42,7 +42,7 @@ run-reader:
 	go run -v --race ./cmd/reader \
 	--ca-cert=../../../../setup/root.crt start \
 	--log-format=console --address=127.0.0.1:3210 \
-	--source-url=https://$(LB)/?stats;csv
+	--source-url="https://$(LB)/?stats;csv"
 
 .PHONY: run-dashboard
 run-dashboard: $(embed)
