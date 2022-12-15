@@ -161,14 +161,14 @@ view model =
 viewHeader : Html msg
 viewHeader =
     thead []
-        [ tr [ class "header1" ]
+        [ tr []
             [ th [] []
             , th [ colspan 2 ] [ text "Queue" ]
             , th [ colspan 2 ] [ text "Session" ]
             , th [] []
             , th [ colspan 5 ] [ text "HTTP" ]
             ]
-        , tr [ class "header2" ]
+        , tr []
             [ th [] [ text "Name" ]
             , th [] [ text "Cur" ]
             , th [] [ text "Max" ]
