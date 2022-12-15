@@ -4,6 +4,9 @@ Wants=network.target
 
 [Service]
 ExecStart=/usr/bin/vault server {{ vault_flags | cmdline }}
+AmbientCapabilities=CAP_IPC_LOCK
+User=vault
+Group=vault
 Restart=on-failure
 RestartSec=5
 LimitCORE=0
