@@ -1,6 +1,7 @@
 .:53 {
+  bind {{ node_address }}
   log
-  health
+  health {{ node_address }}:8080
   errors
   cache
 
