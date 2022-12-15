@@ -103,9 +103,9 @@ all:
         etcd_flags:
           name: "{{ node_name }}"
           data-dir: /var/lib/etcd
-          listen-metrics-urls: http://0.0.0.0:2378
-          listen-client-urls: https://0.0.0.0:2379
-          listen-peer-urls: https://0.0.0.0:2380
+          listen-metrics-urls: "http://{{ node_address }}:2378"
+          listen-client-urls: "https://{{ node_address }}:2379"
+          listen-peer-urls: "https://{{ node_address }}:2380"
           advertise-client-urls: https://etcd:2379
           trusted-ca-file: /etc/etcd/root.crt
           cert-file: /etc/etcd/server.chain
@@ -147,7 +147,7 @@ all:
       vars:
         apiserver_flags:
           v: "{{ log_level }}"
-          bind-address: 0.0.0.0
+          bind-address: "{{ node_address }}"
           external-hostname: apiserver
           advertise-address: "{{ load_balancer_address }}"
           tls-cert-file: /etc/kube-apiserver/server.chain
@@ -200,7 +200,7 @@ all:
 
         controller_manager_flags:
           v: "{{ log_level }}"
-          bind-address: 0.0.0.0
+          bind-address: "{{ node_address }}"
           cluster-name: "{{ cluster_name }}"
           cluster-cidr: "{{ pod_range }}"
           service-cluster-ip-range: "{{ service_range }}"
@@ -223,7 +223,7 @@ all:
 
         scheduler_flags:
           v: "{{ log_level }}"
-          bind-address: 0.0.0.0
+          bind-address: "{{ node_address }}"
           authentication-tolerate-lookup-failure: no
           tls-cert-file: /etc/kube-scheduler/server.chain
           tls-private-key-file: /etc/kube-scheduler/server.key
@@ -237,8 +237,10 @@ all:
 
         konnectivity_server_flags:
           v: "{{ log_level }}"
-          admin-bind-address: 0.0.0.0
-          server-bind-address: 0.0.0.0
+          server-bind-address: "{{ node_address }}"
+          admin-bind-address: "{{ node_address }}"
+          agent-bind-address: "{{ node_address }}"
+          health-bind-address: "{{ node_address }}"
           server-port: 8131
           agent-port: 8132
           admin-port: 8133
