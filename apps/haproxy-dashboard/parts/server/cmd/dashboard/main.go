@@ -21,7 +21,6 @@ func main() {
 	cli.FatalIfErrorf(cli.Validate())
 
 	service.ConfigureLogger(config.LogFormat, config.LogLevel)
-	log.Info().EmbedObject(config).Msg("starting")
 	ctx, cancel := service.Start(context.Background())
 
 	mux := http.NewServeMux()
@@ -29,7 +28,11 @@ func main() {
 	mux.Handle("/", staticHandler())
 
 	if config.Source != "" {
-		log.Info().Str("source", config.Source).Msg("proxy /stats")
+		log.Info().
+			Str("source", config.Source).
+			Dur("timeout", config.Timeout).
+			Msg("start proxy")
+
 		url, err := url.Parse(config.Source)
 		cli.FatalIfErrorf(err)
 		proxy := web.Proxy(nil, url, config.Timeout, time.Hour*24)
@@ -38,6 +41,10 @@ func main() {
 
 	server := web.Server(config.Address, gziphandler.GzipHandler(mux))
 	go func() {
+		log.Info().
+			Str("address", config.Address).
+			Msg("start listener")
+
 		defer cancel()
 		err := server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
