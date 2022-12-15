@@ -5,6 +5,5 @@ namespace: istio-system
 
 resources:
   - default-gateway.yaml
-  - helm/istio-release.yaml
   - pod-monitor.yaml
   - service-monitor.yaml
