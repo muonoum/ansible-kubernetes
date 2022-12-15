@@ -56,3 +56,14 @@
   ansible.builtin.template:
     src: resolv.conf
     dest: /etc/resolv.conf
+
+- name: journald.conf.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+
+- name: configure journald
+  notify: reboot
+  ansible.builtin.copy:
+    src: journald-storage.conf
+    dest: /etc/systemd/journald.conf.d/storage.conf
