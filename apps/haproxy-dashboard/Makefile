@@ -1,7 +1,9 @@
 dashboard := parts/dashboard/gren.json $(shell find parts/dashboard/src)
-server := parts/server/go.mod parts/server/go.sum $(shell find parts/server -name *.go)
+server := parts/server/go.mod parts/server/go.sum \
+	$(shell find parts/server -name *.go)
 embed := parts/server/cmd/dashboard/embed
-bundler := parts/bundler/go.mod parts/bundler/go.sum $(shell find parts/bundler -name *.go)
+bundler := parts/bundler/go.mod parts/bundler/go.sum \
+	$(shell find parts/bundler -name *.go)
 
 all: build/dashboard build/reader
 
@@ -12,15 +14,20 @@ build/bundler: Makefile $(bundler) | build
 	cd parts/bundler && go build -v -o ../../$@ ./cmd/bundler
 
 build/dashboard: Makefile $(embed) $(server) | build
-	cd parts/server && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w' -v -o ../../$@ ./cmd/dashboard
+	cd parts/server && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+	go build -ldflags '-w' -v -o ../../$@ ./cmd/dashboard
 
 build/reader: Makefile $(server) | build
-	cd parts/server && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w' -v -o ../../$@ ./cmd/reader
+	cd parts/server && \
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+	go build -ldflags '-w' -v -o ../../$@ ./cmd/reader
 
 $(embed): Makefile build/bundler $(dashboard) | build
 	rm -rf $@ && mkdir -p $@
 	cp parts/dashboard/src/index.html $@
-	cd parts/dashboard && ../../build/bundler --output ../../$@ src/app.css src/app.js
+	cd parts/dashboard && ../../build/bundler \
+	--output ../../$@ src/app.css src/app.js
 
 clean:
 	-rm -rf build
@@ -31,11 +38,18 @@ dist-clean: clean
 
 .PHONY: run-reader
 run-reader:
-	cd parts/server && go run -v --race ./cmd/reader --ca-cert=../../../../setup/root.crt start --log-format=console --address 127.0.0.1:3210 --source-url "https://$(LB)/?stats;csv"
+	cd parts/server && \
+	go run -v --race ./cmd/reader \
+	--ca-cert=../../../../setup/root.crt start \
+	--log-format=console --address=127.0.0.1:3210 \
+	--source-url=https://$(LB)/?stats;csv
 
 .PHONY: run-dashboard
-run-dashboard:
-	cd parts/server && go run -v --race ./cmd/dashboard --log-format=console --address=:3310 --source="http://localhost:3210/"
+run-dashboard: $(embed)
+	cd parts/server && \
+	go run -v --race ./cmd/dashboard \
+	--log-format=console --address=:3310 \
+	--source=http://localhost:3210/
 
 .PHONY: reader-image
 reader-image:
