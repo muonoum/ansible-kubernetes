@@ -45,7 +45,6 @@ func main() {
 			Str("address", config.Address).
 			Msg("start listener")
 
-		defer cancel()
 		err := server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			log.Error().Err(err).Msg("server error")
