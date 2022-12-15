@@ -1,7 +1,7 @@
 # kube
 
     export cluster=kyuubee
-    export vault="-address https://vault:8200 -ca-cert setup/root.crt"
+    export vault=(-address https://vault:8200 -ca-cert setup/root.crt)
 
 ## dependencies
 
