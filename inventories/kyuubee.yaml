@@ -8,10 +8,6 @@ all:
       node_platform: pi
       node_arch: arm64
 
-    10.0.1.13:
-      node_platform: pi
-      node_arch: arm64
-
   vars:
     etcd_version: 3.5.6
     kubernetes_version: 1.26.0
@@ -97,7 +93,7 @@ all:
 
     etcd:
       hosts:
-        10.0.1.12:
+        10.0.1.11:
 
       vars:
         etcd_flags:
@@ -142,7 +138,7 @@ all:
 
     control_plane:
       hosts:
-        10.0.1.12:
+        10.0.1.11:
 
       vars:
         apiserver_flags:
@@ -263,7 +259,7 @@ all:
 
     worker:
       hosts:
-        10.0.1.13:
+        10.0.1.12:
 
       vars:
         kubelet_flags:
