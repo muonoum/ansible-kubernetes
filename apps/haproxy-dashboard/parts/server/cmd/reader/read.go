@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/k0kubun/pp/v3"
 	"github.com/rs/zerolog/log"
 
 	"haproxy-dashboard/internal/web"
@@ -20,5 +21,8 @@ func (cmd ReadCommand) Run(config Config) error {
 	}
 
 	log.Info().Int("rows", len(rows)).Msg("records")
+
+	pp.Println(rows)
+
 	return nil
 }
