@@ -47,6 +47,10 @@ func (cmd Command) Run() error {
 				return err
 			}
 
+			if doc.APIVersion == "" || doc.Kind == "" {
+				continue
+			}
+
 			nameTemplate := filepath.Base(cmd.Default)
 			relativeOutput := filepath.Dir(cmd.Default)
 			if kind, ok := cmd.Kinds[doc.Kind]; ok {
