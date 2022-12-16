@@ -2,7 +2,6 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app.kubernetes.io/part-of: haproxy-dashboard
     app.kubernetes.io/component: monitoring
   name: haproxy-dashboard-service-monitor
 
