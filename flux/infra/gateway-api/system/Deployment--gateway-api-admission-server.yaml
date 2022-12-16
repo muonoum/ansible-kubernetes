@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gateway-api-admission-server
+  namespace: gateway-system
   labels:
     name: gateway-api-admission-server
-
 spec:
   replicas: 1
   selector:

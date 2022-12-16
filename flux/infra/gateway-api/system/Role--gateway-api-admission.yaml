@@ -5,8 +5,12 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
-
+  namespace: gateway-system
 rules:
-  - apiGroups: [""]
-    resources: [secrets]
-    verbs: [get, create]
+  - apiGroups:
+      - ''
+    resources:
+      - secrets
+    verbs:
+      - get
+      - create

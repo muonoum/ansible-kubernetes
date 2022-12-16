@@ -1,6 +1,8 @@
+.PHONY: crds system clean
+
 junkbox := ../../../library/junkbox
 
-crds system: $(junkbox)
+crds system:
 	make -C ../../..
 
 	flux install --export | \

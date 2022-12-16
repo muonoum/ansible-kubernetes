@@ -4,7 +4,7 @@ metadata:
   labels:
     name: gateway-api-webhook-server
   name: gateway-api-admission-server
-
+  namespace: gateway-system
 spec:
   type: ClusterIP
   ports:

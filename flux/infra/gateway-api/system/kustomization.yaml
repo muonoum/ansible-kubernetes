@@ -1,17 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: gateway-system
-
 resources:
-  - ClusterRole--gateway-api-admission.yml
-  - ClusterRoleBinding--gateway-api-admission.yml
-  - Deployment--gateway-api-admission-server.yml
-  - Job--gateway-api-admission-patch.yml
-  - Job--gateway-api-admission.yml
-  - Namespace--gateway-system.yml
-  - Role--gateway-api-admission.yml
-  - RoleBinding--gateway-api-admission.yml
-  - Service--gateway-api-admission-server.yml
-  - ServiceAccount--gateway-api-admission.yml
-  - ValidatingWebhookConfiguration--gateway-api-admission.yml
+  - Namespace--gateway-system.yaml
+  - ValidatingWebhookConfiguration--gateway-api-admission.yaml
+  - Service--gateway-api-admission-server.yaml
+  - Deployment--gateway-api-admission-server.yaml
+  - ServiceAccount--gateway-api-admission.yaml
+  - ClusterRole--gateway-api-admission.yaml
+  - ClusterRoleBinding--gateway-api-admission.yaml
+  - Role--gateway-api-admission.yaml
+  - RoleBinding--gateway-api-admission.yaml
+  - Job--gateway-api-admission.yaml
+  - Job--gateway-api-admission-patch.yaml

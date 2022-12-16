@@ -1,27 +1,29 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: gateway-api-admission
-  annotations:
+  name: gateway-api-admission-patch
   labels:
     name: gateway-api-webhook
-
+  namespace: gateway-system
 spec:
   template:
     metadata:
-      name: gateway-api-admission-create
+      name: gateway-api-admission-patch
       labels:
         name: gateway-api-webhook
     spec:
       containers:
-        - name: create
+        - name: patch
           image: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
           imagePullPolicy: IfNotPresent
           args:
-            - create
-            - --host=gateway-api-admission-server,gateway-api-admission-server.gateway-system.svc
+            - patch
+            - --webhook-name=gateway-api-admission
             - --namespace=gateway-system
+            - --patch-mutating=false
+            - --patch-validating=true
             - --secret-name=gateway-api-admission
+            - --patch-failure-policy=Fail
           env:
             - name: POD_NAMESPACE
               valueFrom:

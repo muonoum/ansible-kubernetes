@@ -5,7 +5,6 @@ namespace: flux-system
 
 resources:
   - ../../../../infra/flux/system
-  - helm/istio-release.yaml
   - github-provider.yaml
   - github-token-secret.yaml
   - pod-monitor.yaml

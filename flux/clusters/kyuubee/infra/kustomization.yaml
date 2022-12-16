@@ -7,7 +7,6 @@ resources:
   - external-secrets
   - flux-system
   - istio-system
-  - kiali
   - metallb-system
   - prometheus
 

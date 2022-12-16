@@ -1,6 +1,8 @@
+.PHONY: crds operator clean
+
 junkbox := ../../../library/junkbox
 
-crds operator: $(junkbox)
+crds operator:
 	make -C ../../..
 
 	KUBECONFIG=../../../private/admin.kubeconfig \
