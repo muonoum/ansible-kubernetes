@@ -35,8 +35,8 @@
     vault secrets enable $vault -version=2 kv
 
     vault kv put $vault kv/flux-system \
-      slack-webhook=$(op read op://$cluster/flux/slack-webhook) \
-      github-token=$(op read op://$cluster/flux/github-token)
+        slack-webhook=$(op read op://$cluster/flux/slack-webhook) \
+        github-token=$(op read op://$cluster/flux/github-token)
 
     vault kv put $vault kv/flux-system/repo \
         identity="$(op read 'op://$cluster/ssh/private key')" \
