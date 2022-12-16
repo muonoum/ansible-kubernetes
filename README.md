@@ -22,7 +22,7 @@
     kubectl apply -k flux/infra/kube-system/konnectivity
     kubectl apply -k flux/infra/kube-system/metrics-server
 
-## external-secrets
+## vault bootstrap
 
     vault operator init $vault
 
@@ -42,6 +42,14 @@
         identity="$(op read 'op://$cluster/ssh/private key')" \
         identity.pub="$(op read 'op://$cluster/ssh/public key')" \
         known_hosts="$(ssh-keyscan -t ecdsa github.com)"
+
+## existing vault
+
+    for n in {1..3}; do
+        vault operator unseal $vault $(op read op://$cluster/vault/unseal${n})
+    done
+
+## external-secrets
 
     kubectl create ns external-secrets
 
