@@ -24,11 +24,15 @@
 
 ## external-secrets
 
+    vault operator init $vault
+
     for n in {1..3}; do
         vault operator unseal $vault $(op read op://$cluster/vault/unseal${n})
     done
 
     vault login $vault $(op read op://$cluster/vault/token)
+
+    vault secrets enable $vault -version=2 kv
 
     vault kv put $vault kv/flux-system/repo \
         identity="$(op read 'op://$cluster/ssh/private key')" \
