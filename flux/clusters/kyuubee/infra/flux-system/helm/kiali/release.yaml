@@ -13,7 +13,7 @@ spec:
 
   chart:
     spec:
-      chart: kiali/kiali-operator
+      chart: kiali-operator
       version: 1.60.0
       sourceRef:
         kind: HelmRepository
