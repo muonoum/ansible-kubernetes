@@ -1,0 +1,6 @@
+- name: binary
+  notify: restart cri
+  ansible.builtin.copy:
+    src: "runc-{{ runc_version }}-{{ node_arch }}"
+    dest: /usr/bin/runc
+    mode: 0755

@@ -130,6 +130,12 @@
   roles:
     - role: worker
 
+    - role: runc
+      tags: [runc]
+
+    - role: crictl
+      tags: [crictl]
+
     - role: cni
       tags: [cni]
 

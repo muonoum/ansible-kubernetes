@@ -56,19 +56,6 @@
     dest: /usr/bin/
     mode: 0755
 
-- name: runc binary
-  notify: restart containerd
-  ansible.builtin.copy:
-    src: "runc-{{ runc_version }}-{{ node_arch }}"
-    dest: /usr/bin/runc
-    mode: 0755
-
-- name: crictl binary
-  ansible.builtin.copy:
-    src: "crictl-{{ crictl_version }}-{{ node_arch }}"
-    dest: /usr/bin/crictl
-    mode: 0755
-
 - name: service
   notify: restart containerd
   ansible.builtin.template:

@@ -1,0 +1,5 @@
+- name: binary
+  ansible.builtin.copy:
+    src: "crictl-{{ crictl_version }}-{{ node_arch }}"
+    dest: /usr/bin/crictl
+    mode: 0755
