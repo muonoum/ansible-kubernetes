@@ -15,12 +15,17 @@
     ansible-playbook deploy.yaml
     ansible-playbook admin.yaml
 
-    kubectl apply -k flux/infra/kube-system/kube-router
+### kube-proxy
+
+    ansible-playbook kube-proxy.yaml
+
+### kube-router
+
     ansible-playbook kube-router.yaml
 
-    kubectl apply -k flux/infra/kube-system/coredns
-    kubectl apply -k flux/infra/kube-system/konnectivity
-    kubectl apply -k flux/infra/kube-system/metrics-server
+### addons
+
+    ansible-playbook addons.yaml
 
 ## vault bootstrap
 
