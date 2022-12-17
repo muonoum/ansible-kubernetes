@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - coredns
   - konnectivity
+  - kube-proxy
   - kube-router
   - metrics-server
 

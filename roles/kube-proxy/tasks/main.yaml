@@ -1,0 +1,92 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: kube-proxy.mk
+    dest: /root/Makefile.d/kube-proxy.mk
+
+- name: dependencies
+  ansible.builtin.package:
+    state: present
+    name:
+      - conntrack
+      - ipset
+      - ipvsadm
+
+- name: user
+  notify: restart kube-proxy
+  ansible.builtin.user:
+    name: kube-proxy
+    shell: /usr/sbin/nologin
+    home: /var/lib/kube-proxy
+    groups: [worker]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/kube-proxy
+    state: directory
+    owner: kube-proxy
+    group: kube-proxy
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/kube-proxy
+    state: directory
+    owner: kube-proxy
+    group: kube-proxy
+    mode: 0750
+
+- name: config
+  notify: restart kube-proxy
+  ansible.builtin.template:
+    src: config.yaml
+    dest: /etc/kube-proxy/config.yaml
+    owner: kube-proxy
+    group: kube-proxy
+    mode: 0640
+
+- name: kube-proxy client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart kube-proxy
+    path: /etc/kube-proxy/client
+    chain_path: /etc/kube-proxy/client.chain
+    issuer: /etc/worker/issuer
+    common_name: kube-proxy
+    organization_name: kube-proxy
+    owner: kube-proxy
+
+- name: kube-proxy kubeconfig
+  ansible.builtin.include_role:
+    name: kubeconfig
+  vars:
+    notify: restart kube-proxy
+    path: /etc/kube-proxy/client.kubeconfig
+    certificate: /etc/kube-proxy/client.chain
+    key: /etc/kube-proxy/client.key
+    root: /etc/worker/root.crt
+    url: "{{ apiserver_url }}"
+    owner: kube-proxy
+    user: kube-proxy
+
+- name: binary
+  notify: restart kube-proxy
+  ansible.builtin.copy:
+    src: "kube-proxy-{{ kubernetes_version }}-{{ node_arch }}"
+    dest: /usr/bin/kube-proxy
+    mode: 0755
+
+- name: service
+  notify: restart kube-proxy
+  ansible.builtin.template:
+    src: kube-proxy.service
+    dest: /etc/systemd/system/kube-proxy.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: kube-proxy.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

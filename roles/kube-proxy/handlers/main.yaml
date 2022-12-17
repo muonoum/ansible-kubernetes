@@ -1,0 +1,8 @@
+- name: restart kube-proxy
+  throttle: 1
+  ansible.builtin.systemd:
+    name: kube-proxy
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes

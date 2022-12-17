@@ -273,6 +273,9 @@ all:
           - "DNS:{{ node_name }}"
           - "IP:{{ node_address }}"
 
+        kube_proxy_flags:
+          config: /etc/kube-proxy/config.yaml
+
         kube_router_flags:
           kubeconfig: /etc/kube-router/client.kubeconfig
           run-service-proxy: yes
