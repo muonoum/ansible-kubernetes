@@ -1,4 +1,4 @@
-- name: restart containerd
+- name: restart cri
   throttle: 1
   ansible.builtin.systemd:
     name: containerd

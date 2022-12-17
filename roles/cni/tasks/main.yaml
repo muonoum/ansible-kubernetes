@@ -9,7 +9,7 @@
     state: directory
 
 - name: plugins
-  notify: restart containerd
+  notify: restart cri
   ansible.builtin.unarchive:
     creates: /opt/cni/bin/bridge
     src: "cni-plugins-linux-{{ node_arch }}-v{{ cni_version }}.tar"
@@ -21,7 +21,7 @@
     state: directory
 
 - name: config
-  notify: restart containerd
+  notify: restart cri
   ansible.builtin.template:
     src: kube.json
     dest: /etc/cni/net.d/kube.conflist

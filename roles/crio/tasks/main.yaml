@@ -9,7 +9,7 @@
     state: directory
 
 - name: crio config
-  notify: restart crio
+  notify: restart cri
   ansible.builtin.template:
     src: crio.conf
     dest: /etc/crio/crio.conf
@@ -33,7 +33,7 @@
     cmd: "modprobe {{ item }}"
 
 - name: configure sysctl
-  notify: restart crio
+  notify: restart cri
   loop:
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-ip6tables
@@ -45,14 +45,14 @@
     reload: yes
 
 - name: crio binary
-  notify: restart crio
+  notify: restart cri
   ansible.builtin.copy:
     src: "crio-{{ crio_version }}-{{ node_arch }}"
     dest: /usr/bin/crio
     mode: 0755
 
 - name: service
-  notify: restart crio
+  notify: restart cri
   ansible.builtin.template:
     src: crio.service
     dest: /etc/systemd/system/crio.service

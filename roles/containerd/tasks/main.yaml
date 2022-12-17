@@ -9,7 +9,7 @@
     state: directory
 
 - name: containerd config
-  notify: restart containerd
+  notify: restart cri
   ansible.builtin.template:
     src: config.toml
     dest: /etc/containerd/config.toml
@@ -33,7 +33,7 @@
     cmd: "modprobe {{ item }}"
 
 - name: configure sysctl
-  notify: restart containerd
+  notify: restart cri
   loop:
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-ip6tables
@@ -45,7 +45,7 @@
     reload: yes
 
 - name: containerd binaries
-  notify: restart containerd
+  notify: restart cri
   loop:
     - containerd
     - containerd-shim
@@ -57,7 +57,7 @@
     mode: 0755
 
 - name: service
-  notify: restart containerd
+  notify: restart cri
   ansible.builtin.template:
     src: containerd.service
     dest: /etc/systemd/system/containerd.service
