@@ -6,7 +6,7 @@
   connection: local
   gather_facts: no
   roles:
-    - role: manifest
+    - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/kube-router }
 
 - import_playbook: cni.yaml
@@ -15,11 +15,11 @@
   connection: local
   gather_facts: no
   roles:
-    - role: manifest
+    - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/coredns }
 
-    - role: manifest
+    - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/konnectivity }
 
-    - role: manifest
+    - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/metrics-server }
