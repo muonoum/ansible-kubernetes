@@ -77,8 +77,8 @@
 - name: kubelet config
   notify: restart kubelet
   ansible.builtin.template:
-    src: kubelet.yaml
-    dest: /etc/kubelet/kubelet.yaml
+    src: config.yaml
+    dest: /etc/kubelet/config.yaml
     owner: kubelet
     group: kubelet
     mode: 0640

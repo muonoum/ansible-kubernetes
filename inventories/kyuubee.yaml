@@ -266,7 +266,7 @@ all:
           v: "{{ log_level }}"
           container-runtime-endpoint: unix:///var/run/crio/crio.sock
           root-dir: /var/lib/kubelet
-          config: /etc/kubelet/kubelet.yaml
+          config: /etc/kubelet/config.yaml
           kubeconfig: /etc/kubelet/client.kubeconfig
 
         kubelet_subject_alt_names:
