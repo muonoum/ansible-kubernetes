@@ -2,7 +2,7 @@ apiVersion: kiali.io/v1alpha1
 kind: Kiali
 metadata:
   name: kiali
-  namespace: istio-system
+
 spec:
   auth:
     strategy: anonymous
@@ -10,3 +10,21 @@ spec:
     accessible_namespaces:
       - istio-system
       - haproxy-dashboard
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: kiali
+
+spec:
+  parentRefs:
+    - name: default-gateway
+      namespace: istio-system
+
+  hostnames:
+    - 'kiali.yuki.no'
+
+  rules:
+    - backendRefs:
+        - name: kiali
+          port: 20001
