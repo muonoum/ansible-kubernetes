@@ -5,27 +5,12 @@ namespace: flux-system
 
 resources:
   - ../../../../infra/flux/system
-  - github-provider.yaml
-  - github-token-secret.yaml
-  - pod-monitor.yaml
-  - slack-alerts.yaml
-  - slack-provider.yaml
-  - slack-webhook-secret.yaml
+  - alerts
   - helm/kiali
+  - monitoring
 
 patches:
   - target:
       kind: Deployment
       name: kustomize-controller
     path: patch-requeue-dependency.yaml
-
-configMapGenerator:
-  - name: grafana-dashboards
-    files:
-      - dashboards/control-plane.json
-      - dashboards/cluster.json
-    options:
-      labels:
-        grafana_dashboard: "1"
-        app.kubernetes.io/part-of: flux
-        app.kubernetes.io/component: monitoring

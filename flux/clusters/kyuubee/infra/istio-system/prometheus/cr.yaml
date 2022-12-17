@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+
+spec:
+  retention: 1h
+  version: v2.40.5
+
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector: {}
+
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+
+  serviceAccountName: prometheus
