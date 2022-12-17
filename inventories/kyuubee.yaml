@@ -264,7 +264,7 @@ all:
       vars:
         kubelet_flags:
           v: "{{ log_level }}"
-          container-runtime-endpoint: unix:///var/run/containerd/containerd.sock
+          container-runtime-endpoint: unix:///run/cri.sock
           root-dir: /var/lib/kubelet
           config: /etc/kubelet/kubelet.yaml
           kubeconfig: /etc/kubelet/client.kubeconfig
