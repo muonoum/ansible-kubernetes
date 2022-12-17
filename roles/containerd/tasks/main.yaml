@@ -14,11 +14,6 @@
     src: config.toml
     dest: /etc/containerd/config.toml
 
-- name: crictl config
-  ansible.builtin.template:
-    src: crictl.yaml
-    dest: /etc/crictl.yaml
-
 - name: configure modprobe
   ansible.builtin.copy:
     content: |
@@ -61,6 +56,28 @@
   ansible.builtin.template:
     src: containerd.service
     dest: /etc/systemd/system/containerd.service
+
+- name: kubelet override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+
+- name: kubelet override
+  notify: restart kubelet
+  ansible.builtin.template:
+    src: kubelet.conf
+    dest: /etc/systemd/system/kubelet.service.d/cri.conf
+
+- name: crictl config
+  ansible.builtin.template:
+    src: crictl.yaml
+    dest: /etc/crictl.yaml
+
+- name: cni config
+  notify: restart cri
+  ansible.builtin.template:
+    src: bridge.json
+    dest: /etc/cni/net.d/bridge.conflist
 
 - name: start
   ansible.builtin.systemd:

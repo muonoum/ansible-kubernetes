@@ -3,22 +3,6 @@
     src: crio.mk
     dest: /root/Makefile.d/crio.mk
 
-- name: config directory
-  ansible.builtin.file:
-    path: /etc/crio
-    state: directory
-
-- name: crio config
-  notify: restart cri
-  ansible.builtin.template:
-    src: crio.conf
-    dest: /etc/crio/crio.conf
-
-- name: crictl config
-  ansible.builtin.template:
-    src: crictl.yaml
-    dest: /etc/crictl.yaml
-
 - name: configure modprobe
   ansible.builtin.copy:
     content: |
@@ -44,11 +28,15 @@
     sysctl_file: /etc/sysctl.d/kube.conf
     reload: yes
 
-- name: crio binary
+- name: binaries
   notify: restart cri
+  loop:
+    - conmon
+    - crio
+    - pinns
   ansible.builtin.copy:
-    src: "crio-{{ crio_version }}-{{ node_arch }}"
-    dest: /usr/bin/crio
+    src: "crio-{{ crio_version }}-{{ node_arch }}/{{ item }}"
+    dest: /usr/bin/
     mode: 0755
 
 - name: service
@@ -56,6 +44,38 @@
   ansible.builtin.template:
     src: crio.service
     dest: /etc/systemd/system/crio.service
+
+- name: "/etc/containers : directory"
+  ansible.builtin.file:
+    path: /etc/containers
+    state: directory
+
+- name: "/etc/containers : policy.json"
+  ansible.builtin.template:
+    src: policy.json
+    dest: /etc/containers/policy.json
+
+- name: kubelet override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+
+- name: kubelet override
+  notify: restart kubelet
+  ansible.builtin.template:
+    src: kubelet.conf
+    dest: /etc/systemd/system/kubelet.service.d/cri.conf
+
+- name: crictl config
+  ansible.builtin.template:
+    src: crictl.yaml
+    dest: /etc/crictl.yaml
+
+- name: cni config
+  notify: restart cri
+  ansible.builtin.template:
+    src: bridge.json
+    dest: /etc/cni/net.d/bridge.conflist
 
 - name: start
   ansible.builtin.systemd:

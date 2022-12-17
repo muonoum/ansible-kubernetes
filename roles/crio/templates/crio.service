@@ -1,15 +1,12 @@
-[Unit]
-After=network.target
-After=local-fs.target
-
 [Service]
-ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/bin/crio
 Type=notify
 Delegate=yes
-KillMode=process
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/bin/crio
 Restart=always
-RestartSec=5
+RestartSec=10
+KillMode=process
+
 LimitNPROC=infinity
 LimitCORE=infinity
 LimitNOFILE=infinity

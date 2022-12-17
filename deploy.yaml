@@ -139,8 +139,8 @@
     - role: cni
       tags: [cni]
 
-    - role: containerd
-      tags: [containerd]
+    - role: crio
+      tags: [crio]
 
     - role: kubelet
       tags: [kubelet]

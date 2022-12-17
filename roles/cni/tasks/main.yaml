@@ -19,9 +19,3 @@
   ansible.builtin.file:
     path: /etc/cni/net.d
     state: directory
-
-- name: config
-  notify: restart cri
-  ansible.builtin.template:
-    src: kube.json
-    dest: /etc/cni/net.d/kube.conflist
