@@ -16,7 +16,7 @@
     ansible-playbook admin.yaml
 
     kubectl apply -k flux/infra/kube-system/kube-router
-    ansible-playbook cni.yaml
+    ansible-playbook kube-router.yaml
 
     kubectl apply -k flux/infra/kube-system/coredns
     kubectl apply -k flux/infra/kube-system/konnectivity

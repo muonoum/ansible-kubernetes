@@ -9,7 +9,7 @@
     - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/kube-router }
 
-- import_playbook: cni.yaml
+- import_playbook: kube-ruter.yaml
 
 - hosts: localhost
   connection: local
