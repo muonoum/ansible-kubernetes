@@ -11,7 +11,7 @@ all:
   vars:
     etcd_version: 3.5.6
     kubernetes_version: 1.26.0
-    konnectivity_version: 0.0.0
+    konnectivity_version: 83cce1f
     cni_version: 1.1.1
     containerd_version: 1.6.12
     crio_version: 1.23.4
