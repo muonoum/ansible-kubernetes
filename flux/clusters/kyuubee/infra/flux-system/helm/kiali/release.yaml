@@ -20,7 +20,3 @@ spec:
         name: kiali
         namespace: flux-system
       interval: 5m
-
-  values:
-    cr.create: true
-    cr.namespace: istio-system

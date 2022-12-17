@@ -7,3 +7,4 @@ resources:
   - default-gateway.yaml
   - pod-monitor.yaml
   - service-monitor.yaml
+  - kiali.yaml
