@@ -11,6 +11,7 @@ resources:
   - slack-alerts.yaml
   - slack-provider.yaml
   - slack-webhook-secret.yaml
+  - helm/kiali
 
 patches:
   - target:
