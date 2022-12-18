@@ -6,8 +6,8 @@ After=network.target
 ExecStart=/usr/bin/konnectivity-server {{ konnectivity_server_flags | cmdline }}
 User=konnectivity-server
 Group=konnectivity-server
-Restart=on-failure
-RestartSec=5
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

@@ -241,6 +241,7 @@ all:
 
         konnectivity_server_flags:
           v: "{{ log_level }}"
+          server-id: "{{ node_name }}"
           server-bind-address: "{{ node_address }}"
           admin-bind-address: "{{ node_address }}"
           agent-bind-address: "{{ node_address }}"
@@ -296,6 +297,19 @@ all:
         10.0.1.12:
 
       vars:
+        konnectivity_agent_flags:
+          v: "{{ log_level }}"
+          agent-id: "{{ node_name }}"
+          admin-bind-address: "{{ node_address }}"
+          agent-cert: /etc/konnectivity-agent/client.chain
+          agent-key: /etc/konnectivity-agent/client.key
+          ca-cert: /etc/worker/root.crt
+          health-server-host: "{{ node_address }}"
+          proxy-server-host: konnectivity
+          proxy-server-port: 8132
+          admin-server-port: 8133
+          health-server-port: 8134
+
         kubelet_flags:
           v: "{{ log_level }}"
           container-runtime-endpoint: unix:///var/run/crio/crio.sock

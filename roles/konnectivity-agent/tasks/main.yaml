@@ -1,0 +1,62 @@
+- name: Makefile
+  ansible.builtin.template:
+    src: konnectivity-agent.mk
+    dest: /root/Makefile.d/konnectivity-agent.mk
+
+- name: user
+  notify: restart konnectivity-agent
+  ansible.builtin.user:
+    name: konnectivity-agent
+    shell: /usr/sbin/nologin
+    home: /var/lib/konnectivity-agent
+    groups: [worker]
+    create_home: no
+
+- name: data directory
+  ansible.builtin.file:
+    path: /var/lib/konnectivity-agent
+    state: directory
+    owner: konnectivity-agent
+    group: konnectivity-agent
+    mode: 0750
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/konnectivity-agent
+    state: directory
+    owner: konnectivity-agent
+    group: konnectivity-agent
+    mode: 0750
+
+- name: konnectivity-agent client certificate
+  ansible.builtin.include_role:
+    name: certificate/client
+  vars:
+    notify: restart konnectivity-agent
+    path: /etc/konnectivity-agent/client
+    chain_path: /etc/konnectivity-agent/client.chain
+    issuer: /etc/worker/issuer
+    common_name: system:konnectivity-agent
+    organization_name: system:konnectivity-agent
+    owner: konnectivity-agent
+
+- name: binary
+  notify: restart konnectivity-agent
+  ansible.builtin.copy:
+    src: "konnectivity-agent-{{ konnectivity_version }}-{{ node_arch }}"
+    dest: /usr/bin/konnectivity-agent
+    mode: 0755
+
+- name: service
+  notify: restart konnectivity-agent
+  ansible.builtin.template:
+    src: konnectivity-agent.service
+    dest: /etc/systemd/system/konnectivity-agent.service
+
+- name: start
+  ansible.builtin.systemd:
+    name: konnectivity-agent.service
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes

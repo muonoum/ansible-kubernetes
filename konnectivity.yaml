@@ -1,0 +1,37 @@
+- name: setup
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tags: [setup, always]
+  roles:
+    - role: certificate/root
+      tags: [root]
+      vars:
+        common_name: root
+        path: setup/root
+
+- name: node
+  hosts: worker, control_plane
+  tags: [node, always]
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: node
+
+- name: konnectivity-server
+  hosts: control_plane
+  gather_facts: no
+  become: yes
+  roles:
+    - role: kubectl/apply/kustomize
+      vars: { path: flux/infra/kube-system/konnectivity/rbac }
+      run_once: yes
+
+    - role: konnectivity-server
+
+- name: konnectivity-agent
+  hosts: worker
+  gather_facts: no
+  become: yes
+  roles:
+    - role: konnectivity-agent

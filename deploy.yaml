@@ -119,9 +119,6 @@
     - role: scheduler
       tags: [scheduler]
 
-    - role: konnectivity-server
-      tags: [konnectivity-server]
-
 - name: worker
   hosts: worker
   tags: [worker]

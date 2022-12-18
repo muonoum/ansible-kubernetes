@@ -1,0 +1,8 @@
+- name: restart konnectivity-agent
+  throttle: 1
+  ansible.builtin.systemd:
+    name: konnectivity-agent
+    state: restarted
+    enabled: yes
+    masked: no
+    daemon_reload: yes
