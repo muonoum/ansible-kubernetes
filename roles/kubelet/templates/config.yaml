@@ -1,20 +1,26 @@
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 
+cgroupDriver: systemd
+
 enableServer: true
 address: {{ node_address }}
 healthzBindAddress: {{ node_address }}
+enableProfilingHandler: false
+enableDebugFlagsHandler: false
+
 tlsCertFile: /etc/kubelet/server.chain
 tlsPrivateKeyFile: /etc/kubelet/server.key
-cgroupDriver: systemd
+
 authentication:
   webhook:
     enabled: true
   x509:
     clientCAFile: /etc/worker/root.crt
+
 authorization:
   mode: Webhook
+
 resolvConf: /etc/kubelet/resolv.conf
 clusterDomain: {{ cluster_domain }}
-clusterDNS:
-  - {{ cluster_dns }}
+clusterDNS: [{{ cluster_dns }}]
