@@ -292,6 +292,9 @@ all:
           - "DNS:{{ node_name }}"
           - "IP:{{ node_address }}"
 
+        kube_proxy_flags:
+          config: /etc/kube-proxy/config.yaml
+
     worker:
       hosts:
         10.0.1.12:

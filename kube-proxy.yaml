@@ -10,6 +10,14 @@
         common_name: root
         path: setup/root
 
+- name: node
+  hosts: worker
+  tags: [node, always]
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: node
+
 - name: kube-proxy
   hosts: worker
   gather_facts: no
@@ -17,5 +25,6 @@
   roles:
     - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/kube-proxy }
+      run_once: yes
 
     - role: kube-proxy
