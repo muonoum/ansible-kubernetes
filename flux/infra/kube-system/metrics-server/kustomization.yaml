@@ -4,7 +4,13 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-  - api-service.yaml
-  - deployment.yaml
-  - rbac.yaml
-  - service.yaml
+  - v0.6.2
+
+patches:
+  - patch-tls-verify.yaml
+
+patchesJson6902:
+  - target:
+      kind: Deployment
+      name: metrics-server
+    path: patch-preferred-address-types.yaml

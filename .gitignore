@@ -7,5 +7,5 @@
 /setup
 /temp
 /private
-/vendor/*
-!/vendor/Makefile
+/vendor/*/*
+!/vendor/*/Makefile

@@ -1,0 +1,7 @@
+- op: test
+  path: /spec/template/spec/containers/0/args/2
+  value: --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+
+- op: replace
+  path: /spec/template/spec/containers/0/args/2
+  value: --kubelet-preferred-address-types=Hostname

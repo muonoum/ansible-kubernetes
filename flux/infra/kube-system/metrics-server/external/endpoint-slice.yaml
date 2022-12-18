@@ -1,0 +1,18 @@
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: metrics-server
+  labels:
+    kubernetes.io/service-name: metrics-server
+
+addressType: FQDN
+
+ports:
+  - name: https
+    appProtocol: https
+    protocol: TCP
+    port: 1443
+
+endpoints:
+  - addresses:
+      - metrics-server.kyuubee

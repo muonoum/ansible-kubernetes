@@ -1,33 +1,12 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: metrics-server
-  labels:
-    k8s-app: metrics-server
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: metrics-server-auth-reader
-  labels:
-    k8s-app: metrics-server
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: extension-apiserver-authentication-reader
-subjects:
-  - kind: ServiceAccount
-    name: metrics-server
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:aggregated-metrics-reader
   labels:
     k8s-app: metrics-server
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-view: "true"
+  name: system:aggregated-metrics-reader
 rules:
   - apiGroups: [metrics.k8s.io]
     resources: [pods, nodes]
@@ -36,15 +15,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:metrics-server
   labels:
     k8s-app: metrics-server
+  name: system:metrics-server
 rules:
   - apiGroups: [""]
     resources: [nodes/metrics]
     verbs: [get]
   - apiGroups: [""]
-    resources: [pods, nodes, namespaces, configmaps]
+    resources: [pods, nodes]
     verbs: [get, list, watch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -58,7 +37,7 @@ roleRef:
   kind: ClusterRole
   name: system:auth-delegator
 subjects:
-  - kind: ServiceAccount
+  - kind: User
     name: metrics-server
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -72,5 +51,19 @@ roleRef:
   kind: ClusterRole
   name: system:metrics-server
 subjects:
-  - kind: ServiceAccount
+  - kind: User
+    name: metrics-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    k8s-app: metrics-server
+  name: metrics-server-auth-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: User
     name: metrics-server

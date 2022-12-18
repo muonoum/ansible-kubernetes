@@ -1,21 +1,13 @@
-.PHONY: clean dist-clean
+.PHONY: all clean dist-clean
 
-arch := arm64
-hash = $(shell cd apiserver-network-proxy && git rev-parse --short HEAD)
-prefix := ../roles/konnectivity-server/files/konnectivity-server
-proxy_server = $(prefix)-$(hash)-$(arch)
-
-$(proxy_server): apiserver-network-proxy
-	@echo "Building $(shell basename $(proxy_server))"
-	rm -f apiserver-network-proxy/bin/proxy-server
-	arch=$(arch) GOOS=linux GOARCH=$(arch) make -C apiserver-network-proxy bin/proxy-server
-	mv apiserver-network-proxy/bin/proxy-server $(proxy_server)
+all:
+	make -C metrics-server
+	make -C apiserver-network-proxy
 
 clean:
-	rm -f $(proxy_server)
+	make -C metrics-server clean
+	make -C apiserver-network-proxy clean
 
-dist-clean: clean
-	rm -rf apiserver-network-proxy
-
-apiserver-network-proxy:
-	git clone https://github.com/kubernetes-sigs/apiserver-network-proxy.git
+dist-clean:
+	make -C metrics-server dist-clean
+	make -C apiserver-network-proxy dist-clean

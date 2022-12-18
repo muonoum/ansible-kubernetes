@@ -12,6 +12,7 @@ all:
     etcd_version: 3.5.6
     kubernetes_version: 1.26.0
     konnectivity_version: 83cce1f
+    metrics_server_version: 1d5c44e
     cni_version: 1.1.1
     containerd_version: 1.6.12
     crio_version: 1.23.4
@@ -25,13 +26,20 @@ all:
     cluster_name: kyuubee
     log_level: 2
     load_balancer_address: 10.0.1.10
-    service_names: [etcd, apiserver, konnectivity, minio, vault]
     apiserver_url: https://apiserver:6443
     pod_range: 10.224.0.0/16
     service_range: 10.96.0.0/12
     cluster_dns: 10.96.0.10
     upstream_dns: 10.0.1.1
     cluster_domain: cluster.local
+    service_names:
+      - etcd
+      - apiserver
+      - konnectivity
+      - minio
+      - vault
+      - metrics-server
+      - metrics-server.kyuubee
 
   children:
     vault:
@@ -256,6 +264,32 @@ all:
           - "DNS:konnectivity"
           - "DNS:localhost"
           - "IP:127.0.0.1"
+
+        metrics_server_flags:
+          v: "{{ log_level }}"
+          kubelet-certificate-authority: /etc/control-plane/root.crt
+          kubelet-client-certificate: /etc/metrics-server/client.chain
+          kubelet-client-key: /etc/metrics-server/client.key
+          kubelet-preferred-address-types: Hostname
+          bind-address: "{{ node_address }}"
+          secure-port: 1443
+          tls-min-version: VersionTLS13
+          tls-cert-file: /etc/metrics-server/server.chain
+          tls-private-key-file: /etc/metrics-server/server.key
+          kubeconfig: /etc/metrics-server/client.kubeconfig
+          authentication-kubeconfig: /etc/metrics-server/client.kubeconfig
+          authorization-kubeconfig: /etc/metrics-server/client.kubeconfig
+          client-ca-file: /etc/control-plane/root.crt
+          requestheader-client-ca-file: /etc/control-plane/root.crt
+
+        metrics_server_subject_alt_names:
+          - "DNS:metrics-server.kube-system.svc.cluster.local"
+          - "DNS:metrics-server.kube-system.svc.cluster"
+          - "DNS:metrics-server.kube-system.svc"
+          - "DNS:metrics-server.kube-system"
+          - "DNS:metrics-server.kyuubee"
+          - "DNS:{{ node_name }}"
+          - "IP:{{ node_address }}"
 
     worker:
       hosts:
