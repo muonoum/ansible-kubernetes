@@ -20,6 +20,6 @@ images:
 resources:
   - namespace.yaml
   - route.yaml
-  - service-monitor.yaml
+  # - service-monitor.yaml
   - dashboard
   - reader
