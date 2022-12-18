@@ -1,3 +1,7 @@
+.pxname::after {
+  content: '/';
+}
+
 haproxy-stats table {
   width: 100%;
   border: none;

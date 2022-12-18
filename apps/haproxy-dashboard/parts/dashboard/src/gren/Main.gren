@@ -5,7 +5,7 @@ import Browser.Events as Browser
 import Browser.Navigation as Browser
 import Config exposing ( Config )
 import Dict exposing ( Dict )
-import Html exposing ( Html, node, text, section, table, thead, tr, th, td )
+import Html exposing ( Html, node, text, section, table, thead, tr, th, td, span )
 import Html.Attributes exposing ( colspan, class, classList )
 import Http
 import Json.Decode as Decode exposing ( Decoder )
@@ -203,29 +203,35 @@ viewRow kind row =
         maybeText v d =
             maybe identity
     in
-    if kind == Stats.Frontend then
-        text ""
-    else
-        tr [ classList
-                [ { class = "group", enabled = True }
-                , { class = "server", enabled = kind == Stats.Server }
-                , { class = "frontend", enabled = kind == Stats.Frontend }
-                , { class = "backend", enabled = kind == Stats.Backend }
-                , { class = "up", enabled = row.status == "UP" || row.status == "OPEN" }
-                , { class = "down", enabled = row.status == "DOWN" || row.status == "NOLB" }
-                , { class = "maint", enabled = String.startsWith "MAINT" row.status }
+    case kind of
+        Stats.Frontend -> text ""
+
+        Stats.Backend -> text ""
+
+        Stats.Server ->
+            tr [ classList
+                    [ { class = "group", enabled = True }
+                    , { class = "server", enabled = kind == Stats.Server }
+                    , { class = "frontend", enabled = kind == Stats.Frontend }
+                    , { class = "backend", enabled = kind == Stats.Backend }
+                    , { class = "up", enabled = row.status == "UP" || row.status == "OPEN" }
+                    , { class = "down", enabled = row.status == "DOWN" || row.status == "NOLB" }
+                    , { class = "maint", enabled = String.startsWith "MAINT" row.status }
+                    ]
                 ]
-            ]
-            [ td [] [ if kind == Stats.Server then text row.svname else text row.pxname ]
-            , td [] [ maybeNumber row.qcur "-" ]
-            , td [] [ maybeNumber row.qmax "-" ]
-            , td [] [ text (String.fromInt row.scur) ]
-            , td [] [ text (String.fromInt row.smax) ]
-            , td [] [ text row.status ]
-            , td [] [ maybeNumber row.hrsp1xx "-" ]
-            , td [] [ maybeNumber row.hrsp2xx "-" ]
-            , td [] [ maybeNumber row.hrsp3xx "-" ]
-            , td [] [ maybeNumber row.hrsp4xx "-" ]
-            , td [] [ maybeNumber row.hrsp5xx "-" ]
-            ]
+                [ td []
+                    [ span [ class "pxname" ] [ text row.pxname ]
+                    , span [ class "svname" ] [ text row.svname ]
+                    ]
+                , td [] [ maybeNumber row.qcur "-" ]
+                , td [] [ maybeNumber row.qmax "-" ]
+                , td [] [ text (String.fromInt row.scur) ]
+                , td [] [ text (String.fromInt row.smax) ]
+                , td [] [ text row.status ]
+                , td [] [ maybeNumber row.hrsp1xx "-" ]
+                , td [] [ maybeNumber row.hrsp2xx "-" ]
+                , td [] [ maybeNumber row.hrsp3xx "-" ]
+                , td [] [ maybeNumber row.hrsp4xx "-" ]
+                , td [] [ maybeNumber row.hrsp5xx "-" ]
+                ]
 
