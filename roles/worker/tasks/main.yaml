@@ -1,22 +1,33 @@
-- name: cmdline.txt
-  when: node_platform == 'pi'
-  notify: reboot
-  loop:
-    - cgroup_enable=cpuset
-    - cgroup_enable=memory
-    - cgroup_memory=1
-  ansible.builtin.replace:
-    path: /boot/cmdline.txt
-    regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
-    replace: '\1 {{ item }}'
+- when: node_platform == 'pi'
+  block:
+    - name: cmdline.txt
+      notify: reboot
+      loop:
+        - cgroup_enable=cpuset
+        - cgroup_enable=memory
+        - cgroup_memory=1
+        # https://github.com/kubernetes/kubernetes/issues/106957
+        - systemd.unified_cgroup_hierarchy=true
+        - cgroup_no_v1=all
+      ansible.builtin.replace:
+        path: /boot/cmdline.txt
+        regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
+        replace: '\1 {{ item }}'
 
-- name: dphys-swapfile
-  when: node_platform == 'pi'
-  notify: reboot
-  ansible.builtin.lineinfile:
-    path: /etc/dphys-swapfile
-    regexp: ^CONF_SWAPSIZE
-    line: CONF_SWAPSIZE=0
+    - name: configure dphys-swapfile
+      notify: reboot
+      ansible.builtin.lineinfile:
+        path: /etc/dphys-swapfile
+        regexp: ^CONF_SWAPSIZE
+        line: CONF_SWAPSIZE=0
+
+    - name: disable dhpys-swapfile
+      ansible.builtin.systemd:
+        name: dphys-swapfile.service
+        state: stopped
+        enabled: no
+        masked: yes
+        daemon_reload: yes
 
 - name: group
   ansible.builtin.group:
