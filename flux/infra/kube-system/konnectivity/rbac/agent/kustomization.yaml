@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-  - server
-  - agent
+  - service-account.yaml

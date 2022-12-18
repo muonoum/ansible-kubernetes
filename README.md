@@ -23,6 +23,10 @@
 
     ansible-playbook kube-router.yaml
 
+### konnectivity
+
+    ansible-playbook konnectivity.yaml
+
 ### addons
 
     ansible-playbook addons.yaml

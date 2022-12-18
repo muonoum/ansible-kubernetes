@@ -6,7 +6,4 @@
       vars: { path: flux/infra/kube-system/coredns }
 
     - role: kubectl/apply/kustomize
-      vars: { path: flux/infra/kube-system/konnectivity }
-
-    - role: kubectl/apply/kustomize
       vars: { path: flux/infra/kube-system/metrics-server }
