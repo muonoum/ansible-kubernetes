@@ -1,7 +1,7 @@
 .PHONY: crds system clean
 
 junkbox := ../../../library/junkbox
-version := v0.6.0-rc1
+version := v0.6.0-rc2
 base_url := https://github.com/kubernetes-sigs/gateway-api/releases/download/
 
 crds system:

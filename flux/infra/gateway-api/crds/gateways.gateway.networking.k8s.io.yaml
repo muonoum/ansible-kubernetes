@@ -5,8 +5,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    api-approved.kubernetes.io: https://github.com/kubernetes-sigs/gateway-api/pull/1086
-    gateway.networking.k8s.io/bundle-version: v0.6.0-rc1
+    api-approved.kubernetes.io: https://github.com/kubernetes-sigs/gateway-api/pull/1538
+    gateway.networking.k8s.io/bundle-version: v0.6.0-rc2
     gateway.networking.k8s.io/channel: standard
   creationTimestamp: null
   name: gateways.gateway.networking.k8s.io
@@ -30,8 +30,8 @@ spec:
     - jsonPath: .status.addresses[*].value
       name: Address
       type: string
-    - jsonPath: .status.conditions[?(@.type=="Ready")].status
-      name: Ready
+    - jsonPath: .status.conditions[?(@.type=="Programmed")].status
+      name: Programmed
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -495,6 +495,11 @@ spec:
                   reason: Pending
                   status: Unknown
                   type: Accepted
+                - lastTransitionTime: "1970-01-01T00:00:00Z"
+                  message: Waiting for controller
+                  reason: Pending
+                  status: Unknown
+                  type: Programmed
                 description: "Conditions describe the current conditions of the Gateway.
                   \n Implementations should prefer to express Gateway conditions using
                   the `GatewayConditionType` and `GatewayConditionReason` constants
@@ -505,13 +510,14 @@ spec:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct
                     use as an array at the field path .status.conditions.  For example,
-                    type FooStatus struct{     // Represents the observations of a
-                    foo's current state.     // Known .status.conditions.type are:
-                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
-                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
-                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                    \n     // other fields }"
+                    \n \ttype FooStatus struct{ \t    // Represents the observations
+                    of a foo's current state. \t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\" \t    //
+                    +patchMergeKey=type \t    // +patchStrategy=merge \t    // +listType=map
+                    \t    // +listMapKey=type \t    Conditions []metav1.Condition
+                    `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
+                    protobuf:\"bytes,1,rep,name=conditions\"` \n \t    // other fields
+                    \t}"
                   properties:
                     lastTransitionTime:
                       description: lastTransitionTime is the last time the condition
@@ -591,14 +597,15 @@ spec:
                         description: "Condition contains details for one aspect of
                           the current state of this API Resource. --- This struct
                           is intended for direct use as an array at the field path
-                          .status.conditions.  For example, type FooStatus struct{
-                          \    // Represents the observations of a foo's current state.
-                          \    // Known .status.conditions.type are: \"Available\",
-                          \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
-                          \    // +patchStrategy=merge     // +listType=map     //
-                          +listMapKey=type     Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                          patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                          \n     // other fields }"
+                          .status.conditions.  For example, \n \ttype FooStatus struct{
+                          \t    // Represents the observations of a foo's current
+                          state. \t    // Known .status.conditions.type are: \"Available\",
+                          \"Progressing\", and \"Degraded\" \t    // +patchMergeKey=type
+                          \t    // +patchStrategy=merge \t    // +listType=map \t
+                          \   // +listMapKey=type \t    Conditions []metav1.Condition
+                          `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
+                          protobuf:\"bytes,1,rep,name=conditions\"` \n \t    // other
+                          fields \t}"
                         properties:
                           lastTransitionTime:
                             description: lastTransitionTime is the last time the condition
@@ -727,8 +734,8 @@ spec:
     - jsonPath: .status.addresses[*].value
       name: Address
       type: string
-    - jsonPath: .status.conditions[?(@.type=="Ready")].status
-      name: Ready
+    - jsonPath: .status.conditions[?(@.type=="Programmed")].status
+      name: Programmed
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -1189,6 +1196,11 @@ spec:
                   reason: Pending
                   status: Unknown
                   type: Accepted
+                - lastTransitionTime: "1970-01-01T00:00:00Z"
+                  message: Waiting for controller
+                  reason: Pending
+                  status: Unknown
+                  type: Programmed
                 description: "Conditions describe the current conditions of the Gateway.
                   \n Implementations should prefer to express Gateway conditions using
                   the `GatewayConditionType` and `GatewayConditionReason` constants
@@ -1199,13 +1211,14 @@ spec:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct
                     use as an array at the field path .status.conditions.  For example,
-                    type FooStatus struct{     // Represents the observations of a
-                    foo's current state.     // Known .status.conditions.type are:
-                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
-                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
-                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                    \n     // other fields }"
+                    \n \ttype FooStatus struct{ \t    // Represents the observations
+                    of a foo's current state. \t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\" \t    //
+                    +patchMergeKey=type \t    // +patchStrategy=merge \t    // +listType=map
+                    \t    // +listMapKey=type \t    Conditions []metav1.Condition
+                    `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
+                    protobuf:\"bytes,1,rep,name=conditions\"` \n \t    // other fields
+                    \t}"
                   properties:
                     lastTransitionTime:
                       description: lastTransitionTime is the last time the condition
@@ -1285,14 +1298,15 @@ spec:
                         description: "Condition contains details for one aspect of
                           the current state of this API Resource. --- This struct
                           is intended for direct use as an array at the field path
-                          .status.conditions.  For example, type FooStatus struct{
-                          \    // Represents the observations of a foo's current state.
-                          \    // Known .status.conditions.type are: \"Available\",
-                          \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
-                          \    // +patchStrategy=merge     // +listType=map     //
-                          +listMapKey=type     Conditions []metav1.Condition `json:\"conditions,omitempty\"
-                          patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
-                          \n     // other fields }"
+                          .status.conditions.  For example, \n \ttype FooStatus struct{
+                          \t    // Represents the observations of a foo's current
+                          state. \t    // Known .status.conditions.type are: \"Available\",
+                          \"Progressing\", and \"Degraded\" \t    // +patchMergeKey=type
+                          \t    // +patchStrategy=merge \t    // +listType=map \t
+                          \   // +listMapKey=type \t    Conditions []metav1.Condition
+                          `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
+                          protobuf:\"bytes,1,rep,name=conditions\"` \n \t    // other
+                          fields \t}"
                         properties:
                           lastTransitionTime:
                             description: lastTransitionTime is the last time the condition
