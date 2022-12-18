@@ -6,4 +6,4 @@ resources:
   - ../../../infra/flux/crds
   - ../../../infra/gateway-api/crds
   - ../../../infra/metallb/standalone/crds
-  - ../../../infra/prometheus/crds
+  # - ../../../infra/prometheus/crds

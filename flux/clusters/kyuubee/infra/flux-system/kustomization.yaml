@@ -6,8 +6,8 @@ namespace: flux-system
 resources:
   - ../../../../infra/flux/system
   - alerts
-  - helm/kiali
-  - monitoring
+  # - helm/kiali
+  # - monitoring
 
 patches:
   - target:

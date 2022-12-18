@@ -8,6 +8,6 @@ resources:
   - flux-system
   - istio-system
   - metallb-system
-  - prometheus-operator
-  - prometheus
+  # - prometheus-operator
+  # - prometheus
 
