@@ -3,4 +3,5 @@ kind: APIService
 metadata:
   name: v1beta1.metrics.k8s.io
 spec:
-  insecureSkipTLSVerify: false
+  # FIXME
+  insecureSkipTLSVerify: true

@@ -8,4 +8,3 @@ resources:
   - endpoint-slice.yaml
   - rbac.yaml
   - service.yaml
-

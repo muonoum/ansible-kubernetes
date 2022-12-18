@@ -1,8 +1,10 @@
 .PHONY: clean
 
-junkbox := ../../../../library/junkbox
 version := v0.6.2
-url := https://github.com/kubernetes-sigs/metrics-server/releases/download/$(version)/components.yaml
+
+base := https://github.com/kubernetes-sigs/metrics-server/releases/download
+url := $(base)/$(version)/components.yaml
+junkbox := ../../../../library/junkbox
 
 $(version):
 	make -C ../../../..
