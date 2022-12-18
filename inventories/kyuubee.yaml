@@ -251,15 +251,16 @@ all:
           admin-port: 8133
           health-port: 8134
           mode: http-connect
+          cluster-ca-cert: /etc/control-plane/root.crt
           cluster-cert: /etc/konnectivity-server/server.chain
           cluster-key: /etc/konnectivity-server/server.key
           server-ca-cert: /etc/control-plane/root.crt
           server-cert: /etc/konnectivity-server/server.chain
           server-key: /etc/konnectivity-server/server.key
-          agent-namespace: kube-system
-          agent-service-account: konnectivity-agent
-          kubeconfig: /etc/konnectivity-server/client.kubeconfig
-          authentication-audience: system:konnectivity-server
+          # agent-namespace: kube-system
+          # agent-service-account: konnectivity-agent
+          # kubeconfig: /etc/konnectivity-server/client.kubeconfig
+          # authentication-audience: system:konnectivity-server
 
         konnectivity_server_subject_alt_names:
           - "DNS:konnectivity"
@@ -291,9 +292,6 @@ all:
           - "DNS:metrics-server.kyuubee"
           - "DNS:{{ node_name }}"
           - "IP:{{ node_address }}"
-
-        kube_proxy_flags:
-          config: /etc/kube-proxy/config.yaml
 
     worker:
       hosts:
@@ -329,7 +327,7 @@ all:
 
         kube_router_flags:
           kubeconfig: /etc/kube-router/client.kubeconfig
-          run-service-proxy: yes
+          run-service-proxy: no
           run-router: yes
           run-firewall: no
           hairpin-mode: yes
