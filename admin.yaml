@@ -2,8 +2,10 @@
   hosts: control_plane
   gather_facts: no
   become: yes
+
   roles:
     - role: control-plane
+
   tasks:
     - name: directory
       ansible.builtin.file:
