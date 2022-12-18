@@ -1,0 +1,25 @@
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+
+cgroupDriver: systemd
+
+enableServer: true
+address: {{ node_address }}
+healthzBindAddress: {{ node_address }}
+
+serverTLSBootstrap: true
+rotateCertificates: true
+
+authentication:
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: /etc/worker/root.crt
+
+authorization:
+  mode: Webhook
+
+resolvConf: /etc/kubelet/resolv.conf
+clusterDomain: {{ cluster_domain }}
+clusterDNS:
+  - {{ cluster_dns }}
