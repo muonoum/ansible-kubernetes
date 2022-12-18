@@ -179,7 +179,7 @@ viewHeader =
             , th [] [ text "2xx" ]
             , th [] [ text "3xx" ]
             , th [] [ text "4xx" ]
-            , th [] [ text "txx" ]
+            , th [] [ text "5xx" ]
             ]
         ]
 

@@ -1,5 +1,9 @@
+.pxname {
+  font-weight: bold;
+}
+
 .pxname::after {
-  content: '/';
+  content: '—';
 }
 
 haproxy-stats table {
