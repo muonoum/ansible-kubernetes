@@ -38,8 +38,6 @@ all:
       - konnectivity
       - minio
       - vault
-      - metrics-server
-      - metrics-server.kyuubee
 
   children:
     vault:

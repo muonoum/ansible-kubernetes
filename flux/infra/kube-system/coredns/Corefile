@@ -6,7 +6,7 @@
     ready
     hosts {
         ttl 30
-        10.0.1.10 etcd apiserver minio vault metrics-server metrics-server.kyuubee
+        10.0.1.10 etcd apiserver minio vault
         10.0.1.11 node-dcb3aa11
         10.0.1.12 node-df17699e
         fallthrough
