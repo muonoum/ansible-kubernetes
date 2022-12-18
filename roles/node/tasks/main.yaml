@@ -37,8 +37,8 @@
 - name: hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: '^127.0.1.1'
-    line: "127.0.1.1 {{ node_name }}"
+    regexp: '^{{ node_address }}'
+    line: "{{ node_address }} {{ node_name }}"
 
 - name: check for resolvconf.conf
   register: resolvconf
