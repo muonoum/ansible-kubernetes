@@ -1,2 +1,2 @@
 dependencies:
-  - role: kubectl
+  - role: kubectl/install
