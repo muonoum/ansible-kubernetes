@@ -1,0 +1,20 @@
+# Avoids 169.254.0.0/16 routes on veth and kube interfaces
+- name: configure dhcpcd
+  notify: reboot
+  ansible.builtin.lineinfile:
+    path: /etc/dhcpcd.conf
+    regexp: denyinterfaces
+    line: "denyinterfaces veth* kube*"
+
+- name: disable services
+  notify: reboot
+  loop:
+    - avahi-daemon.service
+    - avahi-daemon.socket
+    - bluetooth.service
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+    daemon_reload: yes

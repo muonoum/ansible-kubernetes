@@ -1,11 +1,11 @@
 all:
   hosts:
     10.0.1.11:
-      node_platform: pi
+      node_platform: [rpi, debian]
       node_arch: arm64
 
     10.0.1.12:
-      node_platform: pi
+      node_platform: [rpi, debian]
       node_arch: arm64
 
   vars:

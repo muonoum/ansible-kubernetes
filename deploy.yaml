@@ -53,7 +53,11 @@
 
     - role: rpi
       tags: [rpi]
-      when: node_platform == 'pi'
+      when: "'rpi' in node_platform"
+
+    - role: debian
+      tags: [debian]
+      when: "'debian' in node_platform"
 
 - name: load-balancer
   hosts: load_balancer
