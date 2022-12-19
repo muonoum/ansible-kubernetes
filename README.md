@@ -13,23 +13,6 @@
     make -C vendor
 
     ansible-playbook deploy.yaml
-    ansible-playbook admin.yaml
-
-### kube-proxy
-
-    ansible-playbook kube-proxy.yaml
-
-### kube-router
-
-    ansible-playbook kube-router.yaml
-
-### konnectivity
-
-    ansible-playbook konnectivity.yaml
-
-### addons
-
-    ansible-playbook addons.yaml
 
 ## vault bootstrap
 
@@ -70,7 +53,7 @@
 
 ## istio
 
-    istioctl install --set profile=minimal
+    istioctl install --skip-confirmation --set profile=minimal
 
 ## flux
 

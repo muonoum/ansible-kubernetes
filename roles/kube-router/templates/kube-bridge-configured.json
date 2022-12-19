@@ -1,10 +1,10 @@
 {
   "cniVersion": "1.0.0",
-  "name": "crio",
+  "name": "kube-bridge",
   "plugins": [
     {
       "type": "bridge",
-      "bridge": "cni0",
+      "bridge": "kube-bridge",
       "isGateway": true,
       "ipMasq": true,
       "hairpinMode": true,
@@ -12,7 +12,7 @@
         "type": "host-local",
         "routes": [{ "dst": "0.0.0.0/0" }],
         "ranges": [
-          [{ "subnet": "{{ pod_range }}" }]
+          [{ "subnet": "10.224.0.0/32" }]
         ]
       }
     }

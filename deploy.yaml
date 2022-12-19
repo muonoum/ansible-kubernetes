@@ -3,7 +3,6 @@
   connection: local
   gather_facts: no
   tags: [setup, always]
-
   pre_tasks:
     - name: directory
       ansible.builtin.file:
@@ -56,6 +55,23 @@
       tags: [rpi]
       when: node_platform == 'pi'
 
+- name: load-balancer
+  hosts: load_balancer
+  tags: [load-balancer]
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: keepalived, tags: [keepalived] }
+    - { role: haproxy, tags: [haproxy] }
+
+- name: dns
+  hosts: dns
+  tags: [dns]
+  gather_facts: no
+  become: yes
+  roles:
+    - { role: coredns, tags: [coredns] }
+
 - name: vault
   hosts: vault
   tags: [vault]
@@ -64,35 +80,14 @@
   roles:
     - role: vault
 
-- name: dns
-  hosts: dns
-  tags: [dns]
-  gather_facts: no
-  become: yes
-  roles:
-    - role: coredns
-      tags: [coredns]
-
-- name: storage
-  hosts: storage
-  tags: [storage]
-  gather_facts: no
-  become: yes
-  roles:
-    - role: minio
-      tags: [minio]
-
-- name: load-balancer
-  hosts: load_balancer
-  tags: [load-balancer]
-  gather_facts: yes
-  become: yes
-  roles:
-    - role: keepalived
-      tags: [keepalived]
-
-    - role: haproxy
-      tags: [haproxy]
+# - name: storage
+#   hosts: storage
+#   tags: [storage]
+#   gather_facts: no
+#   become: yes
+#   roles:
+#     - role: minio
+#       tags: [minio]
 
 - name: etcd
   hosts: etcd
@@ -100,7 +95,7 @@
   gather_facts: no
   become: yes
   roles:
-    - role: etcd
+    - { role: etcd }
 
 - name: control-plane
   hosts: control_plane
@@ -108,16 +103,28 @@
   gather_facts: no
   become: yes
   roles:
-    - role: control-plane
+    - { role: control-plane }
+    - { role: apiserver, tags: [apiserver] }
+    - { role: controller-manager, tags: [controller-manager] }
+    - { role: scheduler, tags: [scheduler] }
+    - { role: konnectivity-server, tags: [konnectivity-server] }
 
-    - role: apiserver
-      tags: [apiserver]
+  tasks:
+    - name: private directory
+      delegate_to: localhost
+      connection: local
+      become: no
+      ansible.builtin.file:
+        path: private
+        state: directory
 
-    - role: controller-manager
-      tags: [controller-manager]
-
-    - role: scheduler
-      tags: [scheduler]
+    - name: private/admin.kubeconfig
+      become: yes
+      run_once: yes
+      ansible.builtin.fetch:
+        flat: yes
+        src: /etc/control-plane/admin.kubeconfig
+        dest: private/admin.kubeconfig
 
 - name: worker
   hosts: worker
@@ -125,19 +132,23 @@
   gather_facts: no
   become: yes
   roles:
-    - role: worker
+    - { role: worker }
+    - { role: runc, tags: [runc] }
+    - { role: crictl, tags: [crictl] }
+    - { role: cni, tags: [cni] }
+    - { role: crio, tags: [crio] }
+    - { role: kubelet, tags: [kubelet] }
+    - { role: konnectivity-agent, tags: [konnectivity-agent] }
+    - { role: kubectl/apply/kustomize, vars: { path: flux/infra/kube-system/kube-router } }
+    - { role: kube-router, tags: [kube-router] }
 
-    - role: runc
-      tags: [runc]
+- name: addons
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - role: kubectl/apply/kustomize
+      vars: { path: flux/infra/kube-system/coredns }
 
-    - role: crictl
-      tags: [crictl]
-
-    - role: cni
-      tags: [cni]
-
-    - role: crio
-      tags: [crio]
-
-    - role: kubelet
-      tags: [kubelet]
+    - role: kubectl/apply/kustomize
+      vars: { path: flux/infra/kube-system/metrics-server }

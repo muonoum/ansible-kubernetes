@@ -39,7 +39,7 @@ dist-clean: clean
 .PHONY: run-reader
 run-reader:
 	cd parts/server && \
-	go run -v --race ./cmd/reader \
+	go run -v ./cmd/reader \
 	--ca-cert=../../../../setup/root.crt start \
 	--log-format=console --address=127.0.0.1:3210 \
 	--source-url="https://$(LB)/?stats;csv"
@@ -47,7 +47,7 @@ run-reader:
 .PHONY: run-dashboard
 run-dashboard: $(embed)
 	cd parts/server && \
-	go run -v --race ./cmd/dashboard \
+	go run -v ./cmd/dashboard \
 	--log-format=console --address=:3310 \
 	--source=http://localhost:3210/
 

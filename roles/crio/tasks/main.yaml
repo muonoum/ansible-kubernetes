@@ -16,17 +16,32 @@
   ansible.builtin.command:
     cmd: "modprobe {{ item }}"
 
-- name: configure sysctl
+- name: sysctl
   notify: restart cri
   loop:
-    - net.bridge.bridge-nf-call-iptables
-    - net.bridge.bridge-nf-call-ip6tables
-    - net.ipv4.ip_forward
-  ansible.posix.sysctl:
-    name: "{{ item }}"
-    value: 1
+    - { name: net.bridge.bridge-nf-call-iptables, value: 1 }
+    - { name: net.bridge.bridge-nf-call-ip6tables, value: 1 }
+    - { name: net.ipv4.ip_forward, value: 1 }
+    - { name: net.ipv6.conf.all.forwarding, value: 1 }
+  loop_control:
+    label: "{{ item.name }} = {{ item.value }}"
+  ansible.builtin.sysctl:
     sysctl_file: /etc/sysctl.d/kube.conf
+    state: present
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
     reload: yes
+
+- name: config directory
+  ansible.builtin.file:
+    path: /etc/crio
+    state: directory
+
+- name: config
+  notify: restart cri
+  ansible.builtin.template:
+    src: crio.conf
+    dest: /etc/crio/crio.conf
 
 - name: binaries
   notify: restart cri
@@ -70,12 +85,6 @@
   ansible.builtin.template:
     src: crictl.yaml
     dest: /etc/crictl.yaml
-
-- name: cni config
-  notify: restart cri
-  ansible.builtin.template:
-    src: bridge.json
-    dest: /etc/cni/net.d/bridge.conflist
 
 - name: start
   ansible.builtin.systemd:

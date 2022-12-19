@@ -74,6 +74,11 @@
     src: kube-router.service
     dest: /etc/systemd/system/kube-router.service
 
+- name: cni config
+  ansible.builtin.template:
+    src: kube-bridge.json
+    dest: /etc/cni/net.d/kube-bridge.conflist
+
 - name: start
   ansible.builtin.systemd:
     name: kube-router.service

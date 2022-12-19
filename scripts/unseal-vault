@@ -1,6 +1,0 @@
-#!/bin/bash
-set -eu
-vault=(-address https://vault:8200 -ca-cert setup/root.crt)
-for n in {1..3}; do
-  vault operator unseal $vault $(op read op://kyuubee/vault/unseal${n})
-done
