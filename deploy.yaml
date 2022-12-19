@@ -59,10 +59,6 @@
       tags: [debian]
       when: "'debian' in node_platform"
 
-    - role: ubuntu
-      tags: [ubuntu]
-      when: "'ubuntu' in node_platform"
-
 - name: load-balancer
   hosts: load_balancer
   tags: [load-balancer]

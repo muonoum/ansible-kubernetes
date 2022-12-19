@@ -8,14 +8,6 @@ all:
       node_platform: [rpi, debian]
       node_arch: arm64
 
-    10.0.1.13:
-      # FIXME
-      # sudo modprobe dummy
-      # modprobe: FATAL: Module dummy not found in directory /lib/modules/5.19.0-1009-raspi
-      # kube-router: Error setting up IPVS services for service external IP's and load balancer IP's: failed to setup service endpoint 10.0.1.210: failed creating dummy interface: Failed to add dummy interface:  operation not supported
-      node_platform: [rpi, ubuntu]
-      node_arch: arm64
-
   vars:
     etcd_version: 3.5.6
     kubernetes_version: 1.26.0
@@ -302,7 +294,6 @@ all:
     worker:
       hosts:
         10.0.1.12:
-        10.0.1.13:
 
       vars:
         konnectivity_agent_flags:
