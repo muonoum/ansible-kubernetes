@@ -1,5 +1,0 @@
-- name: upgrade system
-  notify: reboot
-  ansible.builtin.apt:
-    update_cache: yes
-    upgrade: dist
