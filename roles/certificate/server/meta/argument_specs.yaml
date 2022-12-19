@@ -27,3 +27,6 @@ argument_specs:
         type: str
       bundle_path:
         type: str
+      not_after:
+        type: str
+        default: +365d

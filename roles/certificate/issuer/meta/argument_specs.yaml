@@ -10,3 +10,6 @@ argument_specs:
       key_mode:
         default: 0600
         type: int
+      not_after:
+        type: str
+        default: +365d

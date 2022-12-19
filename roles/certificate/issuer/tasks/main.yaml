@@ -32,7 +32,7 @@
     provider: ownca
     ownca_content: "{{ lookup('ansible.builtin.file', 'setup/root.crt') }}"
     ownca_privatekey_content: "{{ lookup('ansible.builtin.file', 'setup/root.key') }}"
-    ownca_not_after: +365d
+    ownca_not_after: "{{ not_after | default('+365d') }}"
     ownca_not_before: "-1d"
     owner: "{{ owner | default(omit) }}"
     group: "{{ group | default(owner | default(omit)) }}"

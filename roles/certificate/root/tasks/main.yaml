@@ -19,3 +19,4 @@
     csr_path: "{{ path }}.req"
     privatekey_path: "{{ path }}.key"
     provider: selfsigned
+    selfsigned_not_after: "{{ not_after | default('+3650d') }}"

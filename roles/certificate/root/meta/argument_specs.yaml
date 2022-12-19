@@ -7,3 +7,6 @@ argument_specs:
       common_name:
         required: yes
         type: str
+      not_after:
+        type: str
+        default: +365d
