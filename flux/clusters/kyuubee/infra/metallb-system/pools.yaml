@@ -5,7 +5,7 @@ metadata:
 
 spec:
   addresses:
-    - 10.0.1.210
+    - 10.0.1.210-10.0.1.210
   autoAssign: false
 ---
 apiVersion: metallb.io/v1beta1
