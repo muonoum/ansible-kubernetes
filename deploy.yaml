@@ -61,8 +61,11 @@
   gather_facts: yes
   become: yes
   roles:
-    - { role: keepalived, tags: [keepalived] }
-    - { role: haproxy, tags: [haproxy] }
+    - role: keepalived
+      tags: [keepalived]
+
+    - role: haproxy
+      tags: [haproxy]
 
 - name: dns
   hosts: dns
@@ -70,7 +73,8 @@
   gather_facts: no
   become: yes
   roles:
-    - { role: coredns, tags: [coredns] }
+    - role: coredns
+      tags: [coredns]
 
 - name: vault
   hosts: vault
@@ -95,7 +99,7 @@
   gather_facts: no
   become: yes
   roles:
-    - { role: etcd }
+    - role: etcd
 
 - name: control-plane
   hosts: control_plane
@@ -103,11 +107,19 @@
   gather_facts: no
   become: yes
   roles:
-    - { role: control-plane }
-    - { role: apiserver, tags: [apiserver] }
-    - { role: controller-manager, tags: [controller-manager] }
-    - { role: scheduler, tags: [scheduler] }
-    - { role: konnectivity-server, tags: [konnectivity-server] }
+    - role: control-plane
+
+    - role: apiserver
+      tags: [apiserver]
+
+    - role: controller-manager
+      tags: [controller-manager]
+
+    - role: scheduler
+      tags: [scheduler]
+
+    - role: konnectivity-server
+      tags: [konnectivity-server]
 
   tasks:
     - name: private directory
@@ -132,15 +144,32 @@
   gather_facts: no
   become: yes
   roles:
-    - { role: worker }
-    - { role: runc, tags: [runc] }
-    - { role: crictl, tags: [crictl] }
-    - { role: cni, tags: [cni] }
-    - { role: crio, tags: [crio] }
-    - { role: kubelet, tags: [kubelet] }
-    - { role: konnectivity-agent, tags: [konnectivity-agent] }
-    - { role: kubectl/apply/kustomize, vars: { path: flux/infra/kube-system/kube-router } }
-    - { role: kube-router, tags: [kube-router] }
+    - role: worker
+
+    - role: runc
+      tags: [runc]
+
+    - role: crictl
+      tags: [crictl]
+
+    - role: cni
+      tags: [cni]
+
+    - role: crio
+      tags: [crio]
+
+    - role: kubelet
+      tags: [kubelet]
+
+    - role: konnectivity-agent
+      tags: [konnectivity-agent]
+
+    - role: kubectl/apply/kustomize
+      vars: { path: flux/infra/kube-system/kube-router }
+      tags: [kube-router]
+
+    - role: kube-router
+      tags: [kube-router]
 
 - name: addons
   hosts: localhost
