@@ -1,7 +1,7 @@
-- include_tasks: platform/rpi-debian.yaml
+- include_tasks: platform/debian.yaml
   when: "'debian' in node_platform"
 
-- include_tasks: platform/rpi-ubuntu.yaml
+- include_tasks: platform/ubuntu.yaml
   when: "'ubuntu' in node_platform"
 
 - name: group
