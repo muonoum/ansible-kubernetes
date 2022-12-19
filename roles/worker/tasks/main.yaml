@@ -1,12 +1,8 @@
 - include_tasks: platform/rpi-debian.yaml
-  when:
-    - "'rpi' in node_platform"
-    - "'debian' in node_platform"
+  when: "'debian' in node_platform"
 
 - include_tasks: platform/rpi-ubuntu.yaml
-  when:
-    - "'rpi' in node_platform"
-    - "'ubuntu' in node_platform"
+  when: "'ubuntu' in node_platform"
 
 - name: group
   ansible.builtin.group:
