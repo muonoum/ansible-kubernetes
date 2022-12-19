@@ -12,3 +12,15 @@
 #       # Disable ethernet port LEDs
 #       dtparam=eth_led0=4
 #       dtparam=eth_led1=4
+
+- name: disable services
+  loop:
+    - avahi-daemon.service
+    - avahi-daemon.socket
+    - bluetooth.service
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+    daemon_reload: yes
