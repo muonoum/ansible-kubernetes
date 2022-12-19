@@ -12,22 +12,3 @@
 #       # Disable ethernet port LEDs
 #       dtparam=eth_led0=4
 #       dtparam=eth_led1=4
-
-# Avoids 169.254.0.0/16 routes on veth and kube interfaces
-- name: configure dhcpcd
-  ansible.builtin.lineinfile:
-    path: /etc/dhcpcd.conf
-    regexp: denyinterfaces
-    line: "denyinterfaces veth* kube*"
-
-- name: disable services
-  loop:
-    - avahi-daemon.service
-    - avahi-daemon.socket
-    - bluetooth.service
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: stopped
-    enabled: no
-    masked: yes
-    daemon_reload: yes
