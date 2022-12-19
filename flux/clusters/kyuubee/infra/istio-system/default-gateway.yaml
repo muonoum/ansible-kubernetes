@@ -6,6 +6,10 @@ metadata:
 spec:
   gatewayClassName: istio
 
+  addresses:
+    - type: IPAddress
+      value: 10.0.1.210
+
   listeners:
     - name: default
       hostname: "*.yuki.no"

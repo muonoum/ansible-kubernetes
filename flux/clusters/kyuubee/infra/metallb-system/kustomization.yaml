@@ -6,4 +6,4 @@ namespace: metallb-system
 resources:
   - ../../../../infra/metallb/standalone/system
   - advert.yaml
-  - pool.yaml
+  - pools.yaml
