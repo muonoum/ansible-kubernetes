@@ -64,6 +64,7 @@ all:
     dns:
       hosts:
         node-dcb3aa11:
+        node-df17699e:
 
       vars:
         coredns_flags:
