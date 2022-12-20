@@ -6,9 +6,11 @@
     ready
     hosts {
         ttl 30
-        10.0.1.10 etcd apiserver minio vault
+        10.0.1.10 etcd apiserver konnectivity minio vault
         10.0.1.11 node-dcb3aa11
         10.0.1.12 node-df17699e
+        10.0.1.13 node-0761a99d
+        10.0.1.14 node-0d53114c
         fallthrough
     }
     kubernetes cluster.local in-addr.arpa ip6.arpa {
