@@ -59,6 +59,15 @@
       tags: [debian]
       when: "'debian' in node_platform"
 
+- name: dns
+  hosts: dns
+  tags: [dns]
+  gather_facts: no
+  become: yes
+  roles:
+    - role: coredns
+      tags: [coredns]
+
 - name: load-balancer
   hosts: load_balancer
   tags: [load-balancer]
@@ -70,15 +79,6 @@
 
     - role: haproxy
       tags: [haproxy]
-
-- name: dns
-  hosts: dns
-  tags: [dns]
-  gather_facts: no
-  become: yes
-  roles:
-    - role: coredns
-      tags: [coredns]
 
 - name: vault
   hosts: vault
