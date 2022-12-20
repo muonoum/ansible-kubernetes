@@ -32,6 +32,7 @@
     - name: apiserver encryption key
       ansible.builtin.copy:
         dest: setup/apiserver-encryption-key
+        force: no
         content: >-
           {{ lookup('community.general.random_string',
                     length=32, base64=true) }}
@@ -39,6 +40,7 @@
     - name: apiserver check token
       ansible.builtin.copy:
         dest: setup/apiserver-check-token
+        force: no
         content: >-
           {{ lookup('community.general.random_string',
                     length=32, special=false) }}
