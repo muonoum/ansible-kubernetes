@@ -1,10 +1,18 @@
 all:
   hosts:
-    10.0.1.11:
+    node-dcb3aa11:
       node_platform: [rpi, debian]
       node_arch: arm64
 
-    10.0.1.12:
+    node-df17699e:
+      node_platform: [rpi, debian]
+      node_arch: arm64
+
+    node-0761a99d:
+      node_platform: [rpi, debian]
+      node_arch: arm64
+
+    node-0d53114c:
       node_platform: [rpi, debian]
       node_arch: arm64
 
@@ -42,7 +50,7 @@ all:
   children:
     vault:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
 
       vars:
         vault_flags:
@@ -55,7 +63,7 @@ all:
 
     dns:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
 
       vars:
         coredns_flags:
@@ -63,7 +71,7 @@ all:
 
     storage:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
 
       vars:
         minio_storage_path: /var/lib/minio
@@ -74,10 +82,17 @@ all:
 
     load_balancer:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
           vrrp_state: MASTER
           vrrp_priority: 101
-          unicast_peers: []
+          unicast_peers:
+            - node-df17699e
+
+        node-df17699e:
+          vrrp_state: BACKUP
+          vrrp_priority: 100
+          unicast_peers:
+            - node-dcb3aa11
 
       vars:
         vrrp_id: 1
@@ -99,7 +114,8 @@ all:
 
     etcd:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
+        node-df17699e:
 
       vars:
         etcd_flags:
@@ -144,7 +160,8 @@ all:
 
     control_plane:
       hosts:
-        10.0.1.11:
+        node-dcb3aa11:
+        node-df17699e:
 
       vars:
         apiserver_flags:
@@ -293,7 +310,8 @@ all:
 
     worker:
       hosts:
-        10.0.1.12:
+        node-0761a99d:
+        node-0d53114c:
 
       vars:
         konnectivity_agent_flags:
