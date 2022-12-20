@@ -18,6 +18,7 @@
     state: directory
 
 - name: keepalived.conf
+  notify: restart keepalived
   ansible.builtin.template:
     src: keepalived.conf
     dest: /etc/keepalived/keepalived.conf

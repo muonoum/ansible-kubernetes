@@ -84,13 +84,11 @@ all:
     load_balancer:
       hosts:
         node-dcb3aa11:
-          vrrp_state: MASTER
           vrrp_priority: 101
           unicast_peers:
             - node-df17699e
 
         node-df17699e:
-          vrrp_state: BACKUP
           vrrp_priority: 100
           unicast_peers:
             - node-dcb3aa11
