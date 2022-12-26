@@ -1,4 +1,4 @@
-# kube
+# ansible-kubernetes
 
     export cluster=kyuubee
     export vault=(-address https://vault:8200 -ca-cert setup/root.crt)
