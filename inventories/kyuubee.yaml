@@ -20,7 +20,6 @@ all:
     etcd_version: 3.5.6
     kubernetes_version: 1.26.0
     konnectivity_version: 83cce1f
-    metrics_server_version: 1d5c44e
     cni_version: 1.1.1
     containerd_version: 1.6.12
     crio_version: 1.23.4
@@ -28,7 +27,6 @@ all:
     runc_version: 1.1.4
     kube_router_version: 1.5.3
     coredns_version: 1.10.0
-    minio_version: RELEASE.2022-12-02T19-19-22Z
     vault_version: 1.12.2
 
     cluster_name: kyuubee
@@ -44,7 +42,6 @@ all:
       - etcd
       - apiserver
       - konnectivity
-      - minio
       - vault
 
   children:
@@ -69,17 +66,6 @@ all:
       vars:
         coredns_flags:
           conf: /etc/coredns/Corefile
-
-    storage:
-      hosts:
-        node-dcb3aa11:
-
-      vars:
-        minio_storage_path: /var/lib/minio
-
-        minio_flags:
-          address: "{{ node_address }}:9000"
-          console-address: "{{ node_address }}:9001"
 
     load_balancer:
       hosts:
@@ -280,32 +266,6 @@ all:
           - "DNS:konnectivity"
           - "DNS:localhost"
           - "IP:127.0.0.1"
-
-        metrics_server_flags:
-          v: "{{ log_level }}"
-          kubelet-certificate-authority: /etc/control-plane/root.crt
-          kubelet-client-certificate: /etc/metrics-server/client.chain
-          kubelet-client-key: /etc/metrics-server/client.key
-          kubelet-preferred-address-types: Hostname
-          bind-address: "{{ node_address }}"
-          secure-port: 1443
-          tls-min-version: VersionTLS13
-          tls-cert-file: /etc/metrics-server/server.chain
-          tls-private-key-file: /etc/metrics-server/server.key
-          kubeconfig: /etc/metrics-server/client.kubeconfig
-          authentication-kubeconfig: /etc/metrics-server/client.kubeconfig
-          authorization-kubeconfig: /etc/metrics-server/client.kubeconfig
-          client-ca-file: /etc/control-plane/root.crt
-          requestheader-client-ca-file: /etc/control-plane/root.crt
-
-        metrics_server_subject_alt_names:
-          - "DNS:metrics-server.kube-system.svc.cluster.local"
-          - "DNS:metrics-server.kube-system.svc.cluster"
-          - "DNS:metrics-server.kube-system.svc"
-          - "DNS:metrics-server.kube-system"
-          - "DNS:metrics-server.kyuubee"
-          - "DNS:{{ node_name }}"
-          - "IP:{{ node_address }}"
 
     worker:
       hosts:

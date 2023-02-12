@@ -90,15 +90,6 @@
   roles:
     - role: vault
 
-# - name: storage
-#   hosts: storage
-#   tags: [storage]
-#   gather_facts: no
-#   become: yes
-#   roles:
-#     - role: minio
-#       tags: [minio]
-
 - name: etcd
   hosts: etcd
   tags: [etcd]
