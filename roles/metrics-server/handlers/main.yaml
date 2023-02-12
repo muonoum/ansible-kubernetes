@@ -1,8 +1,0 @@
-- name: restart metrics-server
-  throttle: 1
-  ansible.builtin.systemd:
-    name: metrics-server
-    state: restarted
-    enabled: yes
-    masked: no
-    daemon_reload: yes
